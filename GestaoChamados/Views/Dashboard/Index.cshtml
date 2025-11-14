@@ -1,0 +1,272 @@
+﻿@model GestaoChamados.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard de Chamados";
+}
+
+<h1>@ViewData["Title"]</h1>
+@if (User.IsInRole("Tecnico"))
+{
+    <p class="text-muted">Exibindo estatísticas para os chamados atribuídos a você.</p>
+}
+<hr />
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total de Chamados</h5>
+                <p class="card-text fs-4">@Model.TotalChamados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <h5 class="card-title">Clientes na Fila</h5>
+                <p class="card-text fs-4" id="fila-count">@Model.ChamadosNaFila</p>
+                <a asp-action="FilaDeAtendimento" class="stretched-link text-white">Ver Fila</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-dark bg-warning h-100">
+            <div class="card-body">
+                <h5 class="card-title">Em Atendimento</h5>
+                <p class="card-text fs-4">@Model.ChamadosEmAtendimento</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <h5 class="card-title">Resolvidos</h5>
+                <p class="card-text fs-4">@Model.ChamadosResolvidos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (User.IsInRole("Tecnico"))
+{
+    <!-- Cards específicos do técnico -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-info h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📊 Taxa de Resolução</h5>
+                    <p class="card-text display-4">@Model.PercentualResolvidos.ToString("F1")%</p>
+                    <small class="text-white-50">Chamados resolvidos vs total atribuído</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-dark">⭐ Nota de Satisfação</h5>
+                    <p class="card-text display-4 text-dark">
+                        @if (Model.NotaMediaSatisfacao > 0)
+                        {
+                            @Model.NotaMediaSatisfacao.ToString("F2")
+                        }
+                        else
+                        {
+                            <span>--</span>
+                        }
+                    </p>
+                    <small class="text-dark">@Model.TotalAvaliacoes avaliações recebidas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-secondary h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📋 Meus Chamados</h5>
+                    <p class="card-text fs-4">
+                        <span class="badge bg-success">@Model.ChamadosResolvidos Resolvidos</span>
+                        <br />
+                        <span class="badge bg-warning mt-2">@Model.ChamadosEmAtendimento Em andamento</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Distribuição de Chamados por Status</div>
+            <div class="card-body">
+                <canvas id="statusPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    @if (User.IsInRole("Tecnico"))
+    {
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">Top Usuários (Aberturas)</div>
+                <div class="card-body">
+                    <canvas id="topUsuariosBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Card de pesquisa de satisfação -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title">Como você avalia o atendimento do suporte?</h5>
+                <div id="rating-stars" class="mb-2">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                    <span class="star" data-value="5">&#9733;</span>
+                </div>
+                <div id="rating-result" class="mt-2 text-success"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Indica no JS se o usuário é Tecnico (true/false) - renderiza literal JS sem aspas
+            const isTecnico = @Html.Raw(User.IsInRole("Tecnico").ToString().ToLower());
+
+            // **Para técnicos: usar dados SEUS; para outros: dados gerais**
+            let statusLabels, statusCounts;
+            
+            if (isTecnico) {
+                // Técnico vê apenas SEUS chamados no gráfico
+                statusLabels = @Html.Raw(Json.Serialize(Model.MeuStatusLabels));
+                statusCounts = @Html.Raw(Json.Serialize(Model.MeuStatusCounts));
+                console.log('[Dashboard] Técnico - Usando MeuStatus:', statusLabels, statusCounts);
+            } else {
+                // Usuários comuns veem dados gerais do sistema
+                statusLabels = @Html.Raw(Json.Serialize(Model.StatusLabels));
+                statusCounts = @Html.Raw(Json.Serialize(Model.StatusCounts));
+                console.log('[Dashboard] Usuário - Usando StatusLabels gerais:', statusLabels, statusCounts);
+            }
+
+            // Cores simples para o gráfico
+            const backgroundColors = [
+                '#dc3545', // vermelho
+                '#ffc107', // amarelo
+                '#198754', // verde
+                '#0d6efd', // azul
+                '#6c757d'  // cinza
+            ];
+
+            // --- Gráfico de pizza: Distribuição por status ---
+            const ctxPie = document.getElementById('statusPieChart');
+            if (ctxPie && statusLabels.length > 0) {
+                new Chart(ctxPie.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            data: statusCounts,
+                            backgroundColor: backgroundColors.slice(0, statusLabels.length),
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: {
+                                display: true,
+                                text: isTecnico ? 'Meus Chamados por Status' : 'Chamados por Status'
+                            }
+                        }
+                    }
+                });
+                console.log('[Dashboard] Gráfico de pizza criado com sucesso');
+            } else {
+                console.warn('[Dashboard] Gráfico não criado - labels vazios ou elemento não encontrado');
+            }
+
+            // --- Gráficos adicionais para o Técnico ---
+            if (isTecnico) {
+                const topUserLabels = @Html.Raw(Json.Serialize(Model.TopUsuarios.Select(u => u.Nome)));
+                const topUserCounts = @Html.Raw(Json.Serialize(Model.TopUsuarios.Select(u => u.Contagem)));
+
+                // Top Usuários - barras
+                const ctxUser = document.getElementById('topUsuariosBarChart').getContext('2d');
+                new Chart(ctxUser, {
+                    type: 'bar',
+                    data: {
+                        labels: topUserLabels,
+                        datasets: [{
+                            label: 'Chamados Abertos',
+                            data: topUserCounts,
+                            backgroundColor: '#198754'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, precision: 0 } }
+                    }
+                });
+            }
+
+            // --- LÓGICA DA NOTIFICAÇÃO (SIGNALR) - SIMPLIFICADA ---
+            const apiBaseUrl = "@(Context.Request.Scheme)://localhost:5142";
+            const jwtToken = "@(Context.Session.GetString("JwtToken"))";
+            
+            console.log('[SignalR Dashboard] Conectando ao hub da API:', apiBaseUrl + '/supportHub');
+            
+            const supportConnection = new signalR.HubConnectionBuilder()
+                .withUrl(apiBaseUrl + "/supportHub", {
+                    accessTokenFactory: () => jwtToken
+                })
+                .build();
+
+            // Atualiza o número no card de resumo E recarrega a página para mostrar na lista
+            supportConnection.on("NovoUsuarioNaFila", function (chamado) {
+                console.log("[Dashboard] Novo usuário na fila recebido via SignalR:", chamado);
+                
+                // Atualiza o contador
+                const countElement = document.getElementById("fila-count");
+                if(countElement) {
+                    let currentCount = parseInt(countElement.innerText);
+                    countElement.innerText = currentCount + 1;
+                }
+                
+                // Recarrega a página para atualizar a lista de chamados
+                setTimeout(function() {
+                    location.reload();
+                }, 500); // Delay de 500ms para garantir que o banco foi atualizado
+            });
+
+            supportConnection.start().then(function () {
+                console.log("[Dashboard] SignalR conectado, entrando no grupo Tecnicos");
+                supportConnection.invoke("JoinTechnicianGroup");
+            }).catch(function (err) {
+                console.error("[Dashboard] Erro ao conectar SignalR:", err.toString());
+                return console.error(err.toString());
+            });
+        });
+
+        // Pesquisa de satisfação
+        document.querySelectorAll('.star').forEach(function(star) {
+            star.addEventListener('click', function() {
+                var rating = this.getAttribute('data-value');
+                document.getElementById('rating-result').innerText = `Obrigado! Sua avaliação: ${rating} estrela(s).`;
+                // Aqui você pode enviar o rating para o backend via AJAX
+            });
+        });
+    </script>
+}

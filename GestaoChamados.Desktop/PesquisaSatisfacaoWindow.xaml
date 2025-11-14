@@ -1,0 +1,180 @@
+<Window x:Class="GestaoChamados.Desktop.PesquisaSatisfacaoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pesquisa de Satisfação"
+        Height="500" Width="600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#F8F9FA">
+
+    <Window.Resources>
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#198754"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#157347"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#6C757D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#5C636A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" Margin="20" CornerRadius="10">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header com ícone de sucesso -->
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,30,0,20">
+                <!-- Ícone de check verde -->
+                <Ellipse Width="80" Height="80" Fill="#198754" Margin="0,0,0,20">
+                    <Ellipse.Effect>
+                        <DropShadowEffect Color="#198754" Opacity="0.3" BlurRadius="15" ShadowDepth="0"/>
+                    </Ellipse.Effect>
+                </Ellipse>
+                <TextBlock Text="✓" FontSize="50" Foreground="White" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,-95,0,0" 
+                           FontWeight="Bold"/>
+                
+                <TextBlock Text="🎉 Ótimo! Problema Resolvido!" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           Foreground="#198754"
+                           HorizontalAlignment="Center"
+                           Margin="0,20,0,10"/>
+                
+                <TextBlock Text="Ficamos felizes em ajudar! Deseja finalizar o atendimento?"
+                           FontSize="14"
+                           Foreground="#6C757D"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="20,0,20,0"/>
+            </StackPanel>
+
+            <!-- Conteúdo -->
+            <StackPanel Grid.Row="1" Margin="40,0">
+                <TextBlock Text="Como foi sua experiência?" 
+                           FontSize="16" 
+                           FontWeight="SemiBold"
+                           Foreground="#212529"
+                           Margin="0,0,0,15"/>
+
+                <!-- Opções de avaliação -->
+                <StackPanel x:Name="AvaliacaoPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                    <Button x:Name="BtnMuitoInsatisfeito" Click="AvaliacaoButton_Click" Tag="1" 
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="5"
+                            ToolTip="Muito Insatisfeito">
+                        <StackPanel>
+                            <TextBlock Text="😞" FontSize="40"/>
+                            <TextBlock Text="Muito Insatisfeito" FontSize="10" HorizontalAlignment="Center" Foreground="#6C757D"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="BtnInsatisfeito" Click="AvaliacaoButton_Click" Tag="2"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="5"
+                            ToolTip="Insatisfeito">
+                        <StackPanel>
+                            <TextBlock Text="😕" FontSize="40"/>
+                            <TextBlock Text="Insatisfeito" FontSize="10" HorizontalAlignment="Center" Foreground="#6C757D"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="BtnNeutro" Click="AvaliacaoButton_Click" Tag="3"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="5"
+                            ToolTip="Neutro">
+                        <StackPanel>
+                            <TextBlock Text="😐" FontSize="40"/>
+                            <TextBlock Text="Neutro" FontSize="10" HorizontalAlignment="Center" Foreground="#6C757D"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="BtnSatisfeito" Click="AvaliacaoButton_Click" Tag="4"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="5"
+                            ToolTip="Satisfeito">
+                        <StackPanel>
+                            <TextBlock Text="😊" FontSize="40"/>
+                            <TextBlock Text="Satisfeito" FontSize="10" HorizontalAlignment="Center" Foreground="#6C757D"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="BtnMuitoSatisfeito" Click="AvaliacaoButton_Click" Tag="5"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="5"
+                            ToolTip="Muito Satisfeito">
+                        <StackPanel>
+                            <TextBlock Text="😄" FontSize="40"/>
+                            <TextBlock Text="Muito Satisfeito" FontSize="10" HorizontalAlignment="Center" Foreground="#6C757D"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <TextBlock x:Name="AvaliacaoSelecionadaText" 
+                           Text="Selecione uma avaliação acima"
+                           FontSize="12"
+                           Foreground="#198754"
+                           HorizontalAlignment="Center"
+                           FontStyle="Italic"
+                           Margin="0,0,0,15"/>
+            </StackPanel>
+
+            <!-- Botões de ação -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,30">
+                <Button x:Name="BtnFinalizar" 
+                        Content="✓ Sim, Finalizar Atendimento" 
+                        Style="{StaticResource PrimaryButton}"
+                        Click="BtnFinalizar_Click"
+                        IsEnabled="False"
+                        Margin="0,0,10,0"/>
+                <Button x:Name="BtnContinuar" 
+                        Content="Continuar Conversando" 
+                        Style="{StaticResource SecondaryButton}"
+                        Click="BtnContinuar_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

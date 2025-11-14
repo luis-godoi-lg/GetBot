@@ -1,0 +1,103 @@
+@model GestaoChamados.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <img src="~/images/png_logo_preto.png" alt="Logo" style="max-width: 220px; height: auto; margin-bottom: 10px;" />
+                    <h2 class="fw-bold text-primary">GetBot</h2>
+                </div>
+
+                <form id="loginForm" asp-action="Index" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email" class="form-control" placeholder="nome@exemplo.com" autocomplete="username" />
+                        <label asp-for="Email">Email</label>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Password" class="form-control" placeholder="Sua senha" autocomplete="current-password" />
+                        <label asp-for="Password">Senha</label>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="loginButton" type="submit" class="btn btn-primary btn-lg">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span class="button-text">Entrar</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Melhorar a experiência do formulário de login
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            const button = document.getElementById('loginButton');
+            const spinner = button.querySelector('.spinner-border');
+            const buttonText = button.querySelector('.button-text');
+            
+            // Verifica se o form é válido antes de mostrar o loading
+            if (this.checkValidity()) {
+                button.disabled = true;
+                spinner.classList.remove('d-none');
+                buttonText.textContent = 'Entrando...';
+            }
+        });
+
+        // Limpar mensagens de erro quando o usuário começa a digitar
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const validationMessage = this.parentElement.querySelector('.text-danger');
+                if (validationMessage) {
+                    validationMessage.textContent = '';
+                }
+                const summaryErrors = document.querySelector('.validation-summary-errors');
+                if (summaryErrors) {
+                    summaryErrors.classList.add('d-none');
+                }
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            border-radius: 10px;
+        }
+
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: #0d6efd;
+        }
+
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .alert {
+            border-radius: 8px;
+        }
+    </style>
+}

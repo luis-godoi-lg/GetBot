@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GestaoChamados.Mobile.Views.FilaAtendimentoPage"
+             Title="Aguardando Atendimento"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F5F6FA">
+    
+    <Grid RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#0066CC" Padding="20,15">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0"
+                        Text=" Voltar"
+                        TextColor="White"
+                        BackgroundColor="Transparent"
+                        FontSize="14"
+                        Clicked="OnVoltarClicked"/>
+                
+                <Label Grid.Column="1"
+                       Text="Aguardando Atendente"
+                       TextColor="White"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+                
+                <Label Grid.Column="2"
+                       x:Name="UserInfoLabel"
+                       Text="usuario@email.com"
+                       TextColor="White"
+                       FontSize="12"
+                       VerticalOptions="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1" Padding="20">
+            <VerticalStackLayout Spacing="20" Padding="0,30">
+                
+                <!-- Loading Indicator -->
+                <VerticalStackLayout x:Name="LoadingContainer" 
+                                     Spacing="15"
+                                     HorizontalOptions="Center">
+                    <ActivityIndicator IsRunning="True"
+                                      Color="#0066CC"
+                                      HeightRequest="50"
+                                      WidthRequest="50"/>
+                    <Label Text=" Aguardando atendente disponível..."
+                           FontSize="18"
+                           TextColor="#666"
+                           HorizontalTextAlignment="Center"/>
+                    <Label x:Name="ProtocoloLabel"
+                           Text=""
+                           FontSize="14"
+                           TextColor="#999"
+                           HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+
+                <!-- Info Card -->
+                <Border BackgroundColor="White"
+                        Padding="20"
+                        Margin="0,20,0,0"
+                        StrokeThickness="0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="10" Offset="0,2"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="ℹ Informações"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#333"/>
+                        
+                        <Label Text="Seu chamado foi encaminhado para nossa equipe técnica."
+                               FontSize="14"
+                               TextColor="#666"
+                               LineBreakMode="WordWrap"/>
+                        
+                        <Label Text="Você receberá uma notificação quando um técnico assumir o atendimento."
+                               FontSize="14"
+                               TextColor="#666"
+                               LineBreakMode="WordWrap"/>
+                        
+                        <Label x:Name="PosicaoFilaLabel"
+                               Text=""
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#0066CC"
+                               LineBreakMode="WordWrap"
+                               IsVisible="False"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Tips Card -->
+                <Border BackgroundColor="#E7F3FF"
+                        Padding="20"
+                        StrokeThickness="0">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text=" Dicas enquanto aguarda:"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#0066CC"/>
+                        
+                        <Label Text=" Mantenha o aplicativo aberto para receber notificações em tempo real"
+                               FontSize="13"
+                               TextColor="#555"
+                               LineBreakMode="WordWrap"/>
+                        
+                        <Label Text=" O tempo médio de espera é de 2 a 5 minutos"
+                               FontSize="13"
+                               TextColor="#555"
+                               LineBreakMode="WordWrap"/>
+                        
+                        <Label Text=" Você pode cancelar e voltar ao chatbot a qualquer momento"
+                               FontSize="13"
+                               TextColor="#555"
+                               LineBreakMode="WordWrap"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Action Buttons -->
+                <VerticalStackLayout Spacing="10" Margin="0,20,0,0">
+                    <Button Text=" Atualizar Status"
+                            BackgroundColor="#0066CC"
+                            TextColor="White"
+                            FontSize="15"
+                            Padding="15"
+                            CornerRadius="8"
+                            Clicked="OnAtualizarClicked"/>
+                    
+                    <Button Text="Cancelar e Voltar ao ChatBot"
+                            BackgroundColor="#DC3545"
+                            TextColor="White"
+                            FontSize="15"
+                            Padding="15"
+                            CornerRadius="8"
+                            Clicked="OnCancelarClicked"/>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

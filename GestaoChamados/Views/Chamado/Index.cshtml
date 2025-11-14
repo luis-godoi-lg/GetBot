@@ -1,0 +1,181 @@
+﻿@model IEnumerable<GestaoChamados.Models.ChamadoModel>
+@{
+    ViewData["Title"] = "Meus Chamados";
+}
+
+@* Bloco para exibir a mensagem de sucesso *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<h1>Meus Chamados</h1>
+
+@* Lógica para mostrar o botão apenas se o usuário for um usuário comum (não técnico nem gerente) *@
+@if (!User.IsInRole("Tecnico") && !User.IsInRole("Gerente"))
+{
+    <p>
+        <a asp-action="Novo" class="btn btn-primary">Abrir Novo Chamado</a>
+    </p>
+}
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Protocolo</th>
+            <th>Assunto</th>
+            <th>Status</th>
+            <th>Criado Por</th>
+            <th>Técnico Responsável</th>
+            <th>Data de Abertura</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Protocolo</td>
+                <td>@item.Assunto</td>
+                <td>
+                    @{
+                        var badgeClass = "bg-secondary";
+                        if (item.Status == "Aberto") { badgeClass = "bg-danger"; }
+                        else if (item.Status == "Em Atendimento") { badgeClass = "bg-warning text-dark"; }
+                        else if (item.Status == "Resolvido") { badgeClass = "bg-success"; }
+                    }
+                    <span class="badge @badgeClass">@item.Status</span>
+                </td>
+                <td>@item.UsuarioCriadorEmail</td>
+                <td>@(item.TecnicoAtribuidoEmail ?? "Não atribuído")</td>
+                <td>@item.DataAbertura.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <button type="button" 
+                            class="btn btn-sm btn-info btn-detalhes" 
+                            data-protocolo="@item.Protocolo"
+                            data-assunto="@item.Assunto"
+                            data-status="@item.Status"
+                            data-descricao="@item.Descricao"
+                            data-criador="@item.UsuarioCriadorEmail"
+                            data-tecnico="@(item.TecnicoAtribuidoEmail ?? "Não atribuído")"
+                            data-data="@item.DataAbertura.ToString("dd/MM/yyyy HH:mm")">
+                        <i class="bi bi-eye"></i> Detalhes
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal de Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-labelledby="modalDetalhesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="modalDetalhesLabel">
+                    <i class="bi bi-file-text"></i> Detalhes do Chamado #<span id="modal-protocolo"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-hash"></i> Protocolo:</strong>
+                        <p class="text-muted" id="detail-protocolo"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-clock"></i> Data de Abertura:</strong>
+                        <p class="text-muted" id="detail-data"></p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong><i class="bi bi-card-heading"></i> Assunto:</strong>
+                    <p class="text-muted" id="detail-assunto"></p>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-flag"></i> Status:</strong>
+                        <p id="detail-status"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-person"></i> Criado Por:</strong>
+                        <p class="text-muted" id="detail-criador"></p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong><i class="bi bi-person-badge"></i> Técnico Responsável:</strong>
+                    <p class="text-muted" id="detail-tecnico"></p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong><i class="bi bi-file-earmark-text"></i> Descrição:</strong>
+                    <div class="p-3 bg-light rounded" id="detail-descricao" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adicionar event listener para todos os botões de detalhes
+            const botoesDetalhes = document.querySelectorAll('.btn-detalhes');
+            
+            botoesDetalhes.forEach(function(botao) {
+                botao.addEventListener('click', function() {
+                    // Pegar dados dos atributos data-*
+                    const protocolo = this.getAttribute('data-protocolo');
+                    const assunto = this.getAttribute('data-assunto');
+                    const status = this.getAttribute('data-status');
+                    const descricao = this.getAttribute('data-descricao') || 'Sem descrição';
+                    const criador = this.getAttribute('data-criador');
+                    const tecnico = this.getAttribute('data-tecnico');
+                    const data = this.getAttribute('data-data');
+                    
+                    // Preencher os dados no modal
+                    document.getElementById('modal-protocolo').textContent = protocolo;
+                    document.getElementById('detail-protocolo').textContent = protocolo;
+                    document.getElementById('detail-assunto').textContent = assunto;
+                    document.getElementById('detail-criador').textContent = criador;
+                    document.getElementById('detail-tecnico').textContent = tecnico;
+                    document.getElementById('detail-data').textContent = data;
+                    
+                    // Formatar descrição - escapar HTML e converter quebras de linha
+                    const descricaoElement = document.getElementById('detail-descricao');
+                    const descricaoTexto = descricao
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/\n/g, '<br>')
+                        .replace(/\r/g, '');
+                    descricaoElement.innerHTML = descricaoTexto;
+                    
+                    // Formatar status com badge
+                    const statusElement = document.getElementById('detail-status');
+                    let badgeClass = 'bg-secondary';
+                    if (status === 'Aberto') badgeClass = 'bg-danger';
+                    else if (status === 'Em Atendimento') badgeClass = 'bg-warning text-dark';
+                    else if (status === 'Resolvido') badgeClass = 'bg-success';
+                    
+                    statusElement.innerHTML = `<span class="badge ${badgeClass}">${status}</span>`;
+                    
+                    // Mostrar o modal
+                    const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+                    modal.show();
+                });
+            });
+        });
+    </script>
+}

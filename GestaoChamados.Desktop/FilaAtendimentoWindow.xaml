@@ -1,0 +1,199 @@
+<Window x:Class="GestaoChamados.Desktop.FilaAtendimentoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Fila de Atendimento ao Vivo - ChatBot" 
+        Height="700" 
+        Width="1200"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        Background="#F5F6FA">
+    
+    <Window.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Azul -->
+        <Border Grid.Row="0" Background="#0066CC" Padding="25,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="ChatBot" 
+                           FontSize="22" 
+                           FontWeight="Bold" 
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1"
+                        x:Name="ChamadosButton" 
+                        Content="Chamados" 
+                        Click="ChamadosButton_Click"
+                        Padding="12,8"
+                        Margin="30,0,0,0"
+                        Background="Transparent" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="14">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#0052A3"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Grid.Column="2"
+                        x:Name="DashboardButton" 
+                        Content="Dashboard" 
+                        Click="DashboardButton_Click"
+                        Padding="12,8"
+                        Margin="5,0,0,0"
+                        Background="Transparent" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="14">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#0052A3"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Text="👤" FontSize="16" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock x:Name="UserInfoTextBlock" 
+                               Text="tecnico@email.com" 
+                               FontSize="14" 
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <Button Grid.Column="5"
+                        x:Name="LogoutButton" 
+                        Content="Sair" 
+                        Click="LogoutButton_Click"
+                        Padding="15,8"
+                        Background="#0052A3" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="13"/>
+            </Grid>
+        </Border>
+
+        <!-- Título -->
+        <Border Grid.Row="1" Background="White" Padding="30,25,30,15">
+            <StackPanel>
+                <TextBlock Text="Fila de Atendimento ao Vivo" 
+                           FontSize="28" 
+                           FontWeight="Bold" 
+                           Foreground="#333"/>
+                <TextBlock Text="Clientes aguardando para iniciar o atendimento." 
+                           FontSize="14" 
+                           Foreground="#666"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Lista de Chamados na Fila -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="20">
+            <StackPanel x:Name="FilaPanel">
+                <!-- Loading -->
+                <TextBlock x:Name="LoadingText"
+                           Text="⏳ Carregando fila..."
+                           FontSize="16"
+                           Foreground="#666"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,50,0,0"/>
+
+                <!-- Nenhum chamado -->
+                <TextBlock x:Name="NenhumChamadoText"
+                           Text="✅ Nenhum cliente aguardando no momento"
+                           FontSize="16"
+                           Foreground="#999"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,50,0,0"
+                           Visibility="Collapsed"/>
+
+                <!-- ItemsControl para os cards -->
+                <ItemsControl x:Name="ChamadosItemsControl" Visibility="Collapsed">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource CardStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock FontSize="18" FontWeight="Bold" Foreground="#333">
+                                            <Run Text="{Binding UsuarioEmail}"/>
+                                        </TextBlock>
+                                        
+                                        <TextBlock Text="{Binding Descricao}" 
+                                                   FontSize="14" 
+                                                   Foreground="#666"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,10,0,0"
+                                                   MaxHeight="60"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                            Content="Atender"
+                                            Tag="{Binding Id}"
+                                            Click="AtenderButton_Click"
+                                            Padding="25,12"
+                                            Background="#0066CC"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            Cursor="Hand"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

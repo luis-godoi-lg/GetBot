@@ -1,0 +1,20 @@
+@using GestaoChamados.Shared.DTOs
+@model CriarEditarUsuarioDto
+
+@{
+    ViewData["Title"] = "Criar Novo Usuário";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">➕ Criar Novo Usuário/Técnico</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form method="post">
+                <input type="hidden" name="Id" value="@(Model?.Id ?? 0)" />
+                
+                @await Html.PartialAsync("~/Views/Manager/_FormUsuario.cshtml", Model)
+            </form>
+        </div>
+    </div>
+</div>

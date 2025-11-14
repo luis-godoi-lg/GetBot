@@ -1,0 +1,207 @@
+<Window x:Class="GestaoChamados.Desktop.NovoChamadoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Abrir Novo Chamado - ChatBot" Height="700" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="White">
+    
+    <Window.Resources>
+        <!-- Estilo para mensagens do usuário -->
+        <Style x:Key="UserMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="#007BFF"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Margin" Value="80,5,10,5"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="MaxWidth" Value="600"/>
+        </Style>
+
+        <!-- Estilo para mensagens do bot -->
+        <Style x:Key="BotMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="#E9ECEF"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Margin" Value="10,5,80,5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="MaxWidth" Value="600"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Azul -->
+        <Border Grid.Row="0" Background="#0066CC" Padding="25,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="ChatBot" 
+                           FontSize="22" 
+                           FontWeight="Bold" 
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="Meus Chamados" 
+                           FontSize="16" 
+                           Foreground="White"
+                           VerticalAlignment="Center"
+                           Margin="30,0,0,0"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Text="👤" FontSize="16" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock x:Name="UserInfoTextBlock" 
+                               Text="usuario@email.com" 
+                               FontSize="14" 
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <Button Grid.Column="3"
+                        x:Name="VoltarButton" 
+                        Content="← Voltar" 
+                        Click="VoltarButton_Click"
+                        Padding="15,8"
+                        Background="#0052A3" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="13"/>
+            </Grid>
+        </Border>
+
+        <!-- Área do Chat -->
+        <Border Grid.Row="1" Background="#F8F9FA" Padding="20">
+            <ScrollViewer x:Name="ChatScrollViewer" 
+                          VerticalScrollBarVisibility="Auto"
+                          Background="White"
+                          Padding="20">
+                <StackPanel x:Name="ChatMessagesPanel">
+                    <!-- Mensagens serão adicionadas aqui dinamicamente -->
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Área de Input -->
+        <Border Grid.Row="2" 
+                Background="White" 
+                BorderThickness="0,1,0,0" 
+                BorderBrush="#DEE2E6"
+                Padding="20,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="MessageTextBox"
+                         Grid.Column="0"
+                         FontSize="14"
+                         Padding="15,12"
+                         BorderBrush="#CED4DA"
+                         BorderThickness="1"
+                         VerticalAlignment="Center"
+                         KeyDown="MessageTextBox_KeyDown">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border Background="White" 
+                                                BorderBrush="#CED4DA" 
+                                                BorderThickness="1"
+                                                CornerRadius="25">
+                                            <ScrollViewer x:Name="PART_ContentHost" 
+                                                          Margin="15,8"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+
+                <Button x:Name="SendButton"
+                        Grid.Column="1"
+                        Content="➤" 
+                        Click="SendButton_Click"
+                        Width="50"
+                        Height="50"
+                        Margin="10,0,0,0"
+                        Background="#007BFF" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="20"
+                        FontWeight="Bold">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="25"
+                                                BorderThickness="0">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#0056B3"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Botões de Ação -->
+        <Border Grid.Row="3" 
+                Background="White" 
+                Padding="20,15"
+                BorderThickness="0,1,0,0"
+                BorderBrush="#DEE2E6">
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Center">
+                <Button x:Name="FalarComHumanoButton"
+                        Content="Falar com Atendente Humano" 
+                        Click="FalarComHumanoButton_Click"
+                        Padding="20,10"
+                        Margin="0,0,10,0"
+                        Background="#6C757D" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="14"
+                        Visibility="Collapsed"/>
+
+                <Button x:Name="ProblemaResolvidoButton"
+                        Content="✓ Problema Resolvido" 
+                        Click="ProblemaResolvidoButton_Click"
+                        Padding="20,10"
+                        Background="#28A745" 
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Visibility="Collapsed"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

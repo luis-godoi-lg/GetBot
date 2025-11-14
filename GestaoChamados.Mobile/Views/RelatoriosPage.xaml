@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GestaoChamados.Mobile.Views.RelatoriosPage"
+             Title="Relatórios"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F5F6FA">
+
+    <Grid RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#0066CC" Padding="12,12">
+            <Grid ColumnDefinitions="Auto,*">
+                <Button Grid.Column="0"
+                        Text="←"
+                        TextColor="White"
+                        BackgroundColor="Transparent"
+                        FontSize="22"
+                        Padding="0"
+                        WidthRequest="36"
+                        Clicked="OnVoltarClicked"/>
+                
+                <Label Grid.Column="1"
+                       Text="📊 Relatórios"
+                       TextColor="White"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       Margin="8,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="12" Padding="12">
+                
+                <!-- Filtros de Data -->
+                <Border BackgroundColor="White" Padding="12" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🗓️ Período" FontSize="14" FontAttributes="Bold" TextColor="#333"/>
+                        
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                <Label Text="Início" FontSize="11" TextColor="#666"/>
+                                <DatePicker x:Name="DataInicioPicker" Format="dd/MM/yyyy" 
+                                           BackgroundColor="#F9FAFB" TextColor="#333" FontSize="12"/>
+                            </VerticalStackLayout>
+                            
+                            <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                <Label Text="Fim" FontSize="11" TextColor="#666"/>
+                                <DatePicker x:Name="DataFimPicker" Format="dd/MM/yyyy"
+                                           BackgroundColor="#F9FAFB" TextColor="#333" FontSize="12"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                        
+                        <Button Text="🔍 Buscar" 
+                                BackgroundColor="#2563EB" 
+                                TextColor="White"
+                                CornerRadius="8"
+                                HeightRequest="42"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                Clicked="OnBuscarClicked"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Resumo Geral -->
+                <Label Text="📈 Resumo" FontSize="15" FontAttributes="Bold" TextColor="#333" Margin="0,4,0,0"/>
+                
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                    <Border Grid.Row="0" Grid.Column="0" BackgroundColor="#10B981" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="✅ Resolvidos" FontSize="11" TextColor="White" Opacity="0.9"/>
+                            <Label x:Name="ResolvidosLabel" Text="0" FontSize="26" FontAttributes="Bold" TextColor="White"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Row="0" Grid.Column="1" BackgroundColor="#F59E0B" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🔧 Atendimento" FontSize="11" TextColor="White" Opacity="0.9"/>
+                            <Label x:Name="EmAtendimentoLabel" Text="0" FontSize="26" FontAttributes="Bold" TextColor="White"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Row="1" Grid.Column="0" BackgroundColor="#EF4444" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="⏳ Aguardando" FontSize="11" TextColor="White" Opacity="0.9"/>
+                            <Label x:Name="AguardandoLabel" Text="0" FontSize="26" FontAttributes="Bold" TextColor="White"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Row="1" Grid.Column="1" BackgroundColor="#2563EB" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="📊 Total" FontSize="11" TextColor="White" Opacity="0.9"/>
+                            <Label x:Name="TotalLabel" Text="0" FontSize="26" FontAttributes="Bold" TextColor="White"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Performance por Técnico -->
+                <Border BackgroundColor="White" Padding="12" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10" Margin="0,4,0,0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🏆 Performance" FontSize="14" FontAttributes="Bold" TextColor="#333"/>
+                        
+                        <CollectionView x:Name="TecnicosCollectionView">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="#F9FAFB" Padding="10" Margin="0,0,0,6" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8">
+                                        <VerticalStackLayout Spacing="6">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Label Grid.Column="0" Text="{Binding Nome}" FontSize="13" FontAttributes="Bold" TextColor="#333"/>
+                                                <Label Grid.Column="1" Text="{Binding ChamadosResolvidos, StringFormat='{0} ✓'}" 
+                                                       FontSize="12" FontAttributes="Bold" TextColor="#10B981" HorizontalOptions="End"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="35,*,40">
+                                                <Label Grid.Column="0" Text="Taxa:" FontSize="10" TextColor="#666" VerticalOptions="Center"/>
+                                                <Border Grid.Column="1" BackgroundColor="#E5E7EB" StrokeThickness="0" HeightRequest="16" VerticalOptions="Center" Margin="4,0"
+                                                        StrokeShape="RoundRectangle 4">
+                                                    <Border BackgroundColor="#10B981" StrokeThickness="0" HeightRequest="16" 
+                                                            WidthRequest="{Binding TaxaResolucaoDecimal}" HorizontalOptions="Start"
+                                                            StrokeShape="RoundRectangle 4"/>
+                                                </Border>
+                                                <Label Grid.Column="2" Text="{Binding TaxaResolucaoText}" FontSize="11" FontAttributes="Bold" 
+                                                       TextColor="#10B981" VerticalOptions="Center" HorizontalOptions="End"/>
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

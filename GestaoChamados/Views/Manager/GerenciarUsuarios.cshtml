@@ -1,0 +1,119 @@
+@using GestaoChamados.Shared.DTOs
+@model List<ListarUsuarioDto>
+
+@{
+    ViewData["Title"] = "Gerenciar Usuários";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">👥 Gerenciar Usuários e Técnicos</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="mb-3">
+        <a href="@Url.Action("CriarUsuario", "Manager")" class="btn btn-success">
+            ➕ Criar Novo Usuário/Técnico
+        </a>
+        <a href="@Url.Action("Dashboard", "Manager")" class="btn btn-secondary">
+            ← Voltar ao Dashboard
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Papel</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var usuario in Model)
+                    {
+                        <tr>
+                            <td>@usuario.Id</td>
+                            <td>@usuario.Nome</td>
+                            <td>@usuario.Email</td>
+                            <td>
+                                @switch(usuario.Role)
+                                {
+                                    case "Usuario":
+                                        <span class="badge bg-info">👤 Usuário</span>
+                                        break;
+                                    case "Tecnico":
+                                        <span class="badge bg-primary">🔧 Técnico</span>
+                                        break;
+                                    case "Gerente":
+                                        <span class="badge bg-warning">👨‍💼 Gerente</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">Outro</span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                <a href="@Url.Action("EditarUsuario", "Manager", new { id = usuario.Id })" class="btn btn-sm btn-warning">
+                                    ✏️ Editar
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deletarUsuario(@usuario.Id, '@usuario.Nome')">
+                                    🗑️ Deletar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            Nenhum usuário cadastrado ainda.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function deletarUsuario(id, nome) {
+        if (confirm(`Tem certeza que deseja deletar o usuário "${nome}"?`)) {
+            fetch(`@Url.Action("DeletarUsuario", "Manager")`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Erro:', error));
+        }
+    }
+</script>

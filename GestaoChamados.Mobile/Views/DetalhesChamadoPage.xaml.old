@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GestaoChamados.Mobile.ViewModels"
+             x:Class="GestaoChamados.Mobile.Views.DetalhesChamadoPage"
+             Title="{Binding Title}">
+    
+    <ContentPage.BindingContext>
+        <vm:DetalhesChamadoViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Atualizar" Command="{Binding RefreshCommand}" IconImageSource="refresh.png"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="0">
+        
+        <!-- Informações do Chamado -->
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="15" Spacing="10">
+                <Frame CornerRadius="10" HasShadow="True" Padding="15">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="{Binding Chamado.Titulo}"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource Primary}"/>
+
+                        <Label Text="{Binding Chamado.Id, StringFormat='Protocolo: #{0}'}"
+                               FontSize="14"
+                               TextColor="{StaticResource Gray600}"/>
+
+                        <Label Text="{Binding Chamado.Status}"
+                               FontSize="14"
+                               FontAttributes="Bold"/>
+
+                        <Label Text="{Binding Chamado.Descricao}"
+                               FontSize="14"
+                               TextColor="{StaticResource Gray700}"/>
+
+                        <Label Text="{Binding Chamado.DataCriacao, StringFormat='Data: {0:dd/MM/yyyy HH:mm}'}"
+                               FontSize="12"
+                               TextColor="{StaticResource Gray500}"/>
+
+                        <!-- Botões de Ação -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,10,0,0"
+                              IsVisible="{Binding Chamado.Status, Converter={StaticResource StatusToButtonVisibilityConverter}}">
+                            <Button Grid.Column="0"
+                                    Text="Solicitar Atendimento"
+                                    Command="{Binding SolicitarAtendimentoCommand}"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    TextColor="White"
+                                    FontSize="12"/>
+                            
+                            <Button Grid.Column="1"
+                                    Text="Marcar Resolvido"
+                                    Command="{Binding MarcarResolvidoCommand}"
+                                    BackgroundColor="{StaticResource Success}"
+                                    TextColor="White"
+                                    FontSize="12"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Chat Messages -->
+        <CollectionView Grid.Row="1"
+                       ItemsSource="{Binding Mensagens}"
+                       Margin="10,0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="5"
+                           Padding="10"
+                           CornerRadius="10"
+                           HasShadow="True"
+                           HorizontalOptions="{Binding IsBot, Converter={StaticResource BoolToAlignmentConverter}}">
+                        <Frame.BackgroundColor>
+                            <MultiBinding Converter="{StaticResource IsBotToColorConverter}">
+                                <Binding Path="IsBot"/>
+                            </MultiBinding>
+                        </Frame.BackgroundColor>
+                        
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="{Binding RemetenteNome}"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Gray700}"/>
+                            
+                            <Label Text="{Binding Mensagem}"
+                                   FontSize="14"
+                                   TextColor="{StaticResource Gray900}"/>
+                            
+                            <Label Text="{Binding DataEnvio, StringFormat='{0:HH:mm}'}"
+                                   FontSize="10"
+                                   TextColor="{StaticResource Gray500}"
+                                   HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Input de Mensagem -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,Auto"
+              Padding="10"
+              ColumnSpacing="10"
+              BackgroundColor="{StaticResource Gray100}">
+            <Entry Grid.Column="0"
+                   Text="{Binding NovaMensagem}"
+                   Placeholder="Digite sua mensagem..."
+                   ReturnType="Send"
+                   VerticalOptions="Center"/>
+            
+            <Button Grid.Column="1"
+                    Text="Enviar"
+                    Command="{Binding EnviarMensagemCommand}"
+                    BackgroundColor="{StaticResource Primary}"
+                    TextColor="White"
+                    WidthRequest="80"/>
+        </Grid>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="1"
+                          IsRunning="{Binding IsBusy}"
+                          IsVisible="{Binding IsBusy}"
+                          Color="{StaticResource Primary}"
+                          VerticalOptions="Center"
+                          HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>

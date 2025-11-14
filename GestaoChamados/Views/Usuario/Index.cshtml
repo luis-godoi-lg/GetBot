@@ -1,0 +1,35 @@
+﻿@model IEnumerable<GestaoChamados.Models.UsuarioModel>
+@{
+    ViewData["Title"] = "Gerenciamento de Usuários";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="Criar" class="btn btn-primary">Adicionar Novo Usuário</a>
+</p>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Cargo (Role)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var usuario in Model)
+        {
+            <tr>
+                <td>@usuario.Nome</td>
+                <td>@usuario.Email</td>
+                <td>@usuario.Role</td>
+            </tr>
+        }
+    </tbody>
+</table>

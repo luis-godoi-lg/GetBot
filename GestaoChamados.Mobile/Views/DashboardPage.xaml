@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GestaoChamados.Mobile.Views.DashboardPage"
+             Title="Dashboard"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F5F6FA">
+    
+    <Grid RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#0066CC" Padding="20,15">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <Image Grid.Column="0"
+                       Source="png_logo_branco.png"
+                       HeightRequest="28"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center"/>
+                
+                <Label Grid.Column="1"
+                       Text="GetBot"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       VerticalOptions="Center"
+                       Margin="8,0,0,0"/>
+                
+                <Button Grid.Column="3"
+                        Text="Sair"
+                        TextColor="White"
+                        BackgroundColor="#0052A3"
+                        FontSize="13"
+                        Padding="15,8"
+                        CornerRadius="4"
+                        Clicked="OnLogoutClicked"/>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="20" Padding="16">
+                
+                <!-- User Info -->
+                <Border BackgroundColor="White" Padding="16" StrokeThickness="0" Margin="0,10,0,0"
+                        StrokeShape="RoundRectangle 12">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="10" Offset="0,2"/>
+                    </Border.Shadow>
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="" FontSize="24"/>
+                        <VerticalStackLayout>
+                            <Label x:Name="UserEmailLabel" Text="tecnico@email.com" FontSize="16" FontAttributes="Bold" TextColor="#333"/>
+                            <Label x:Name="UserRoleLabel" Text="Técnico" FontSize="13" TextColor="#666"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Stats Cards Row 1 -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <!-- Total Chamados -->
+                    <Border Grid.Column="0" BackgroundColor="#2563EB" Padding="20" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Total de Chamados" TextColor="White" FontSize="13" Opacity="0.9"/>
+                            <Label x:Name="TotalChamadosLabel" Text="0" TextColor="White" FontSize="42" FontAttributes="Bold"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <!-- Clientes na Fila -->
+                    <Border Grid.Column="1" BackgroundColor="#06B6D4" Padding="20" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Clientes na Fila" TextColor="White" FontSize="13" Opacity="0.9"/>
+                            <Label x:Name="ClientesFilaLabel" Text="0" TextColor="White" FontSize="42" FontAttributes="Bold"/>
+                            <Button x:Name="VerFilaButton"
+                                    Text="Ver Fila"
+                                    BackgroundColor="White"
+                                    TextColor="#06B6D4"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    Padding="10,6"
+                                    CornerRadius="4"
+                                    Margin="0,8,0,0"
+                                    Clicked="OnVerFilaClicked"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Stats Cards Row 2 -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <!-- Em Atendimento -->
+                    <Border Grid.Column="0" BackgroundColor="#F59E0B" Padding="20" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Em Atendimento" TextColor="White" FontSize="13" Opacity="0.9"/>
+                            <Label x:Name="EmAtendimentoLabel" Text="0" TextColor="White" FontSize="42" FontAttributes="Bold"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <!-- Resolvidos -->
+                    <Border Grid.Column="1" BackgroundColor="#10B981" Padding="20" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Resolvidos" TextColor="White" FontSize="13" Opacity="0.9"/>
+                            <Label x:Name="ResolvidosLabel" Text="0" TextColor="White" FontSize="42" FontAttributes="Bold"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Métricas do Técnico -->
+                <VerticalStackLayout x:Name="TecnicoMetricsContainer" Spacing="10" IsVisible="True">
+                    
+                    <!-- Taxa de Resolução -->
+                    <Border BackgroundColor="#3B82F6" Padding="20" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text=" Taxa de Resolução" TextColor="White" FontSize="14" Opacity="0.9"/>
+                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                                <Label x:Name="TaxaResolucaoLabel" Text="0.0" TextColor="White" FontSize="42" FontAttributes="Bold"/>
+                                <Label Text="%" TextColor="White" FontSize="24" FontAttributes="Bold" VerticalOptions="End" Margin="0,0,0,8"/>
+                            </HorizontalStackLayout>
+                            <Label Text="Chamados resolvidos vs total atribuído" TextColor="White" FontSize="11" Opacity="0.8" HorizontalTextAlignment="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Nota de Satisfação -->
+                    <Border BackgroundColor="#F59E0B" Padding="20" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text=" Nota de Satisfação" TextColor="White" FontSize="14" Opacity="0.9"/>
+                            <Label x:Name="NotaSatisfacaoLabel" Text="--" TextColor="White" FontSize="42" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                            <Label x:Name="TotalAvaliacoesLabel" Text="0 avaliações recebidas" TextColor="White" FontSize="11" Opacity="0.8" HorizontalTextAlignment="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Meus Chamados -->
+                    <Border BackgroundColor="#6B7280" Padding="20" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text=" Meus Chamados" TextColor="White" FontSize="14" Opacity="0.9"/>
+                            <Border BackgroundColor="#10B981" Padding="12,8" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
+                                <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                                    <Label x:Name="MeusResolvidosLabel" Text="0" TextColor="White" FontSize="20" FontAttributes="Bold"/>
+                                    <Label Text="Resolvidos" TextColor="White" FontSize="14"/>
+                                </HorizontalStackLayout>
+                            </Border>
+                            <Border BackgroundColor="#F59E0B" Padding="12,8" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
+                                <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                                    <Label x:Name="MeusEmAndamentoLabel" Text="0" TextColor="White" FontSize="20" FontAttributes="Bold"/>
+                                    <Label Text="Em andamento" TextColor="White" FontSize="14"/>
+                                </HorizontalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Distribuição por Status -->
+                <Border BackgroundColor="White" Padding="20" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="10" Offset="0,2"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="16">
+                        <Label Text="Distribuição de Chamados por Status" FontSize="16" FontAttributes="Bold" TextColor="#333"/>
+                        
+                        <VerticalStackLayout Spacing="12">
+                            <HorizontalStackLayout Spacing="10">
+                                <BoxView Color="#EF4444" WidthRequest="40" HeightRequest="20"/>
+                                <Label Text="Aberto:" FontSize="14" TextColor="#333" FontAttributes="Bold"/>
+                                <Label x:Name="AbertosLegendaLabel" Text="0" FontSize="14" TextColor="#666"/>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="10">
+                                <BoxView Color="#F59E0B" WidthRequest="40" HeightRequest="20"/>
+                                <Label Text="Em Atendimento:" FontSize="14" TextColor="#333" FontAttributes="Bold"/>
+                                <Label x:Name="EmAtendimentoLegendaLabel" Text="0" FontSize="14" TextColor="#666"/>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="10">
+                                <BoxView Color="#10B981" WidthRequest="40" HeightRequest="20"/>
+                                <Label Text="Resolvido:" FontSize="14" TextColor="#333" FontAttributes="Bold"/>
+                                <Label x:Name="ResolvidosLegendaLabel" Text="0" FontSize="14" TextColor="#666"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Botão Ver Todos os Chamados -->
+                <Button Text=" Ver Todos os Chamados"
+                        BackgroundColor="#0066CC"
+                        TextColor="White"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        Padding="16"
+                        CornerRadius="8"
+                        Margin="0,10,0,30"
+                        Clicked="OnVerChamadosClicked"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

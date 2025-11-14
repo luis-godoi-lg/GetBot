@@ -1,0 +1,325 @@
+<Window x:Class="GestaoChamados.Desktop.DetalhesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Detalhes do Chamado" 
+        Height="800" 
+        Width="650"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#F5F6FA">
+    
+    <Window.Resources>
+        <!-- Estilo para labels -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <!-- Estilo para valores -->
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <!-- Estilo para badge de status -->
+        <Style x:Key="StatusBadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho -->
+        <Border Grid.Row="0" Background="#17A2B8" Padding="20,15">
+            <Grid>
+                <TextBlock x:Name="TitleTextBlock"
+                           Text="📋 Detalhes do Chamado #2025003" 
+                           FontSize="18" 
+                           FontWeight="Bold" 
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+                
+                <Button Content="✕" 
+                        Click="CloseButton_Click"
+                        Width="30" 
+                        Height="30"
+                        HorizontalAlignment="Right"
+                        Background="Transparent"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- Conteúdo -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="25,20">
+                <!-- Protocolo e Data -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="# Protocolo:" Style="{StaticResource LabelStyle}"/>
+                        <TextBlock x:Name="ProtocoloText" 
+                                   Text="2025003" 
+                                   Style="{StaticResource ValueStyle}"
+                                   FontWeight="Bold"
+                                   Foreground="#17A2B8"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="🕐 Data de Abertura:" Style="{StaticResource LabelStyle}"/>
+                        <TextBlock x:Name="DataAberturaText" 
+                                   Text="07/11/2025 19:22" 
+                                   Style="{StaticResource ValueStyle}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Assunto -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="📝 Assunto:" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock x:Name="AssuntoText" 
+                               Text="Internet não funciona" 
+                               Style="{StaticResource ValueStyle}"
+                               FontWeight="SemiBold"
+                               FontSize="15"/>
+                </StackPanel>
+
+                <!-- Status e Criado Por -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="📊 Status:" Style="{StaticResource LabelStyle}"/>
+                        <Border x:Name="StatusBadge" 
+                                Style="{StaticResource StatusBadgeStyle}"
+                                Background="#28A745">
+                            <TextBlock x:Name="StatusText" 
+                                       Text="Resolvido" 
+                                       Foreground="White" 
+                                       FontWeight="Bold"
+                                       FontSize="12"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="👤 Criado Por:" Style="{StaticResource LabelStyle}"/>
+                        <TextBlock x:Name="CriadoPorText" 
+                                   Text="usuario@email.com" 
+                                   Style="{StaticResource ValueStyle}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Técnico Responsável -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="🛠️ Técnico Responsável:" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock x:Name="TecnicoText" 
+                               Text="Chatbot Automático" 
+                               Style="{StaticResource ValueStyle}"/>
+                </StackPanel>
+
+                <!-- Descrição -->
+                <StackPanel Margin="0,0,0,10">
+                    <TextBlock Text="📄 Descrição:" Style="{StaticResource LabelStyle}"/>
+                    <Border Background="White" 
+                            BorderBrush="#DEE2E6" 
+                            BorderThickness="1" 
+                            CornerRadius="4" 
+                            Padding="15"
+                            MinHeight="150">
+                        <TextBlock x:Name="DescricaoText" 
+                                   TextWrapping="Wrap"
+                                   FontSize="13"
+                                   Foreground="#333"
+                                   LineHeight="20"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Área de Chat (visível apenas quando Em Atendimento) -->
+                <Border x:Name="ChatArea" 
+                        Background="White" 
+                        BorderBrush="#DEE2E6" 
+                        BorderThickness="1"
+                        CornerRadius="8" 
+                        Padding="15" 
+                        Margin="0,20,0,0"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Text="💬 Chat com Técnico:" 
+                                   Style="{StaticResource LabelStyle}" 
+                                   Margin="0,0,0,10"/>
+                        
+                        <!-- Histórico de Mensagens -->
+                        <Border Background="#F8F9FA" 
+                                BorderBrush="#DEE2E6" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Height="300" 
+                                Margin="0,0,0,10">
+                            <ScrollViewer x:Name="ChatScrollViewer" 
+                                         VerticalScrollBarVisibility="Auto"
+                                         Padding="5">
+                                <StackPanel x:Name="ChatMessagesPanel"/>
+                            </ScrollViewer>
+                        </Border>
+                        
+                        <!-- Input de Mensagem -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox x:Name="MessageTextBox" 
+                                     Grid.Column="0"
+                                     Padding="12" 
+                                     Height="45"
+                                     VerticalContentAlignment="Center"
+                                     FontSize="14"
+                                     BorderBrush="#DEE2E6"
+                                     BorderThickness="1"
+                                     Background="White"
+                                     Margin="0,0,10,0"/>
+                            
+                            
+                        </Grid>
+                        
+                        <!-- Botão Finalizar (apenas técnico) -->
+                        <Button x:Name="FinalizarButton" 
+                                Content="✓ Finalizar Atendimento" 
+                                Click="FinalizarButton_Click"
+                                Height="40"
+                                Background="#28A745"
+                                Foreground="White"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Visibility="Collapsed">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#28A745"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" 
+                                                                    VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#218838"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        
+                        <!-- Botão Abrir Chat (quando Em Atendimento) -->
+                        <Button x:Name="AbrirChatButton" 
+                                Content="💬 Abrir Chat ao Vivo" 
+                                Click="AbrirChatButton_Click"
+                                Height="40"
+                                Background="#17A2B8"
+                                Foreground="White"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Visibility="Collapsed"
+                                Margin="0,10,0,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#17A2B8"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" 
+                                                                    VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#138496"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Rodapé -->
+        <Border Grid.Row="2" 
+                Background="White" 
+                BorderBrush="#DEE2E6" 
+                BorderThickness="0,1,0,0"
+                Padding="25,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Botão Assumir Chamado (visível apenas para técnico quando status = Aberto ou Aguardando) -->
+                <Button x:Name="AssumirButton"
+                        Grid.Column="0"
+                        Content="✓ Assumir Chamado" 
+                        Click="AssumirButton_Click"
+                        Padding="20,10"
+                        Background="#28A745"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Left"
+                        Visibility="Collapsed"/>
+
+                <Button Content="⊗ Fechar" 
+                        Grid.Column="1"
+                        Click="CloseButton_Click"
+                        Padding="20,10"
+                        Background="#6C757D"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Right"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+
+

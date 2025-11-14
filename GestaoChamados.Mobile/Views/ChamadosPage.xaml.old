@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GestaoChamados.Mobile.ViewModels"
+             x:Class="GestaoChamados.Mobile.Views.ChamadosPage"
+             Title="{Binding Title}">
+    
+    <ContentPage.BindingContext>
+        <vm:ChamadosViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Novo" Command="{Binding NovoChamadoCommand}" IconImageSource="add.png"/>
+        <ToolbarItem Text="Atualizar" Command="{Binding RefreshCommand}" IconImageSource="refresh.png"/>
+        <ToolbarItem Text="Sair" Command="{Binding LogoutCommand}"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*" Padding="10">
+        
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Padding="10" Spacing="5">
+            <Label Text="📋 Meus Chamados"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="{StaticResource Primary}"/>
+            <Label Text="Acompanhe seus tickets de suporte"
+                   FontSize="14"
+                   TextColor="{StaticResource Gray600}"/>
+        </VerticalStackLayout>
+
+        <!-- Lista de Chamados -->
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsBusy}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Chamados}"
+                           SelectedItem="{Binding SelectedChamado}"
+                           SelectionMode="Single"
+                           EmptyView="Nenhum chamado encontrado.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="5" Padding="15" CornerRadius="10" HasShadow="True">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChamadosViewModel}}, Path=SelectedChamado}" 
+                                                     CommandParameter="{Binding .}"/>
+                            </Frame.GestureRecognizers>
+                            
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                                <!-- Título -->
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Titulo}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Gray900}"/>
+                                
+                                <!-- Protocolo -->
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Id, StringFormat='#{0}'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}"
+                                       VerticalOptions="Center"/>
+
+                                <!-- Status -->
+                                <Frame Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Padding="8,4"
+                                       CornerRadius="5"
+                                       HasShadow="False"
+                                       HorizontalOptions="Start"
+                                       Margin="0,5">
+                                    <Frame.BackgroundColor>
+                                        <MultiBinding Converter="{StaticResource StatusToColorConverter}">
+                                            <Binding Path="Status"/>
+                                        </MultiBinding>
+                                    </Frame.BackgroundColor>
+                                    <Label Text="{Binding Status}"
+                                           FontSize="12"
+                                           TextColor="White"
+                                           FontAttributes="Bold"/>
+                                </Frame>
+
+                                <!-- Descrição -->
+                                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Text="{Binding Descricao}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource Gray600}"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="2"
+                                       Margin="0,5"/>
+
+                                <!-- Data -->
+                                <Label Grid.Row="3" Grid.Column="0"
+                                       Text="{Binding DataCriacao, StringFormat='Criado em: {0:dd/MM/yyyy HH:mm}'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Gray500}"/>
+
+                                <!-- Prioridade -->
+                                <Label Grid.Row="3" Grid.Column="1"
+                                       Text="{Binding Prioridade}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="End">
+                                    <Label.TextColor>
+                                        <MultiBinding Converter="{StaticResource PrioridadeToColorConverter}">
+                                            <Binding Path="Prioridade"/>
+                                        </MultiBinding>
+                                    </Label.TextColor>
+                                </Label>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.Row="1"
+                          IsRunning="{Binding IsBusy}"
+                          IsVisible="{Binding IsBusy}"
+                          Color="{StaticResource Primary}"
+                          VerticalOptions="Center"
+                          HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,809 @@
+﻿@model GestaoChamados.Models.ChamadoModel
+@using System.Security.Claims
+@using System.Linq
+@using Microsoft.AspNetCore.Html
+
+<style>
+    .star {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transition: all 0.3s ease;
+        margin: 0 8px !important;
+        font-size: 1.3rem !important;
+        padding: 12px 24px !important;
+        border-width: 2px !important;
+        font-weight: 600 !important;
+        color: #856404 !important;
+        background-color: white !important;
+        border-color: #ffc107 !important;
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .star:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        background-color: #ffc107 !important;
+        color: white !important;
+        border-color: #ffc107 !important;
+    }
+    
+    .star:active,
+    .star.selected {
+        transform: scale(1.05);
+        background-color: #ffc107 !important;
+        color: white !important;
+        border-color: #ffc107 !important;
+    }
+    
+    /* Força visibilidade em todos os estados */
+    button.star,
+    button.star * {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* FORÇA A DIV RATING-STARS A MOSTRAR OS BOTÕES */
+    #rating-stars {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 80px !important;
+        line-height: normal !important;
+    }
+    
+    #rating-stars button,
+    #rating-stars button.star,
+    #rating-stars .star {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #856404 !important;
+        background-color: white !important;
+        border: 2px solid #ffc107 !important;
+        font-size: 1.3rem !important;
+        padding: 12px 24px !important;
+        margin: 0 8px !important;
+        width: auto !important;
+        height: auto !important;
+        mask: none !important;
+        -webkit-mask: none !important;
+        mask-image: none !important;
+        -webkit-mask-image: none !important;
+    }
+    
+    #satisfaction-block {
+        animation: slideIn 0.6s ease-out;
+    }
+    
+    #satisfaction-block .card {
+        border-radius: 20px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+    
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes fadeIn {
+        from { 
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to { 
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+@{
+    ViewData["Title"] = "Detalhes do Chamado";
+    
+    // DEBUG: Verificar se Model existe
+    System.Diagnostics.Debug.WriteLine("=======================================================");
+    System.Diagnostics.Debug.WriteLine($"[VIEW DETALHES] Model é nulo? {(Model == null ? "SIM" : "NÃO")}");
+    if (Model != null)
+    {
+        System.Diagnostics.Debug.WriteLine($"[VIEW DETALHES] Protocolo: {Model.Protocolo}");
+        System.Diagnostics.Debug.WriteLine($"[VIEW DETALHES] Assunto: {Model.Assunto}");
+        System.Diagnostics.Debug.WriteLine($"[VIEW DETALHES] Status: {Model.Status}");
+        System.Diagnostics.Debug.WriteLine($"[VIEW DETALHES] Criador: {Model.UsuarioCriadorEmail}");
+        System.Diagnostics.Debug.WriteLine($"[VIEW DETALHES] Técnico: {Model.TecnicoAtribuidoEmail ?? "Não atribuído"}");
+    }
+    System.Diagnostics.Debug.WriteLine("=======================================================");
+    
+    var chatHistory = ViewBag.ChatHistory as List<ChatMessageModel>;
+    var userEmail = User.Identity?.Name ?? "";
+    var isOwner = Model.UsuarioCriadorEmail == userEmail;
+    var isAssignedTechnician = Model.TecnicoAtribuidoEmail == userEmail;
+    var isTecnico = User.IsInRole("Tecnico");
+    var isUsuario = User.IsInRole("Usuario");
+    var showChat = Model.Status == "Em Atendimento";
+    var showWaiting = Model.Status == "Aguardando Atendente";
+    var showSatisfaction = Model.Status == "Resolvido" && Model.Rating == null && isUsuario;
+}
+
+<!-- Tela de espera -->
+<div id="waiting-for-tech-block" style="display:@(showWaiting ? "block" : "none");">
+    <h1>Detalhes do Chamado: @Model.Protocolo</h1>
+    <hr />
+    
+    <!-- Alerta de Fila de Atendimento -->
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <h4 class="alert-heading">
+            <i class="bi bi-hourglass-split"></i> Você está na Fila de Atendimento!
+        </h4>
+        <p class="mb-2">
+            <strong>Seu chamado foi registrado com sucesso!</strong>
+        </p>
+        <p class="mb-2">
+            Um de nossos técnicos foi notificado e logo iniciará seu atendimento.
+        </p>
+        <hr>
+        <p class="mb-0">
+            <small>
+                <i class="bi bi-info-circle"></i> 
+                Você será notificado automaticamente quando um técnico assumir seu chamado.
+                Esta página será atualizada automaticamente.
+            </small>
+        </p>
+    </div>
+    
+    @RenderDetalhesDoChamado(Model)
+    <div id="waiting-for-tech-signal"></div>
+    <div class="text-center mt-4">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h4 class="mt-3">Aguardando um atendente...</h4>
+        <p class="text-muted">Você está na posição da fila. Por favor, mantenha esta página aberta.</p>
+    </div>
+</div>
+
+<!-- Chat -->
+<div class="chat-block" style="display:@(showChat ? "block" : "none");">
+    <div class="accordion mb-3" id="accordionDetails" style="max-width: 600px; margin: auto;">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDetails">
+                    <strong>Ver/Ocultar Detalhes do Chamado #@Model.Protocolo</strong>
+                </button>
+            </h2>
+            <div id="collapseDetails" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    @RenderDetalhesDoChamado(Model)
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="chat-container">
+        <div id="chat-messages" class="chat-messages">
+            @if (chatHistory != null)
+            {
+                @foreach (var msg in chatHistory)
+                {
+                    var messageClass = msg.SenderEmail.Equals(userEmail, StringComparison.OrdinalIgnoreCase) ? "message-sent" : "message-received";
+                    var displayName = msg.SenderEmail.Equals(userEmail, StringComparison.OrdinalIgnoreCase) ? "Você" : msg.SenderName;
+                    <div class="message @messageClass">
+                        <div class="sender-name">@Html.Raw(displayName)</div>
+                        <div>@msg.MessageText</div>
+                    </div>
+                }
+            }
+        </div>
+        <form id="send-form" class="chat-input-form">
+            <input type="text" id="message-input" autocomplete="off" placeholder="Digite sua mensagem...">
+            <button type="submit"><i class="bi bi-telegram"></i></button>
+        </form>
+    </div>
+    <div class="text-center mt-3" style="max-width: 600px; margin: auto;">
+        @if (isTecnico && isAssignedTechnician)
+        {
+            <form asp-controller="Chamado" asp-action="MarcarComoResolvido" asp-route-id="@Model.Protocolo" method="post">
+                <button type="submit" class="btn btn-success">Marcar como Resolvido</button>
+            </form>
+        }
+        <!-- Botões de ação do chatbot (aparecem quando problema foi resolvido) -->
+        <div id="chatbot-action-buttons" style="display: none; margin-top: 20px;">
+            <h5 class="mb-3">O que deseja fazer?</h5>
+            <button type="button" class="btn btn-success btn-lg me-2" onclick="fecharChamado()">
+                ✅ Fechar Chamado
+            </button>
+            <button type="button" class="btn btn-warning btn-lg" onclick="continuarChamado()">
+                🔄 Continuar Chamado
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Pesquisa de satisfação (apenas para cliente) -->
+@if (showSatisfaction)
+{
+    <div id="satisfaction-block" style="margin-top:40px; max-width:700px; margin-left:auto; margin-right:auto;">
+        <div class="card shadow-lg border-0">
+            <div class="card-body text-center p-5">
+                <div class="mb-4">
+                    <i class="bi bi-emoji-smile" style="font-size: 4rem; color: #28a745;"></i>
+                </div>
+                <h3 class="mb-4" style="color: #333; font-weight: 600;">Como você avalia o atendimento?</h3>
+                
+                <!-- Star Rating System -->
+                <div id="rating-stars" class="mb-4 text-center" style="display: block !important; visibility: visible !important;">
+                    <button type="button" class="btn btn-outline-warning star" data-value="1" data-label="Muito Ruim" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">1 ⭐</button>
+                    <button type="button" class="btn btn-outline-warning star" data-value="2" data-label="Ruim" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">2 ⭐</button>
+                    <button type="button" class="btn btn-outline-warning star" data-value="3" data-label="Regular" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">3 ⭐</button>
+                    <button type="button" class="btn btn-outline-warning star" data-value="4" data-label="Bom" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">4 ⭐</button>
+                    <button type="button" class="btn btn-outline-warning star" data-value="5" data-label="Excelente" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">5 ⭐</button>
+                </div>
+                
+                <!-- Label dinâmico que muda ao passar o mouse -->
+                <div id="rating-label" class="mb-3 text-center" style="min-height: 30px; font-size: 1.1rem; font-weight: 600; color: #666;">
+                    Clique em um botão para avaliar
+                </div>
+                
+                <!-- Resultado da avaliação -->
+                <div id="rating-result" class="mt-4"></div>
+            </div>
+        </div>
+        <form id="ratingForm" method="post" asp-action="Avaliar" asp-route-id="@Model.Protocolo">
+            <input type="hidden" id="ratingValue" name="rating" value="" />
+        </form>
+    </div>
+}
+
+<!-- Mensagem de sucesso para técnico ao finalizar chamado -->
+@if (Model.Status == "Resolvido" && isTecnico)
+{
+    <div class="alert alert-success text-center mt-4">Chamado finalizado com sucesso!</div>
+    <div class="text-center mt-2">
+        <a asp-controller="Chamado" asp-action="Index" class="btn btn-secondary">Voltar para a Lista de Chamados</a>
+    </div>
+}
+
+@functions {
+    public IHtmlContent RenderDetalhesDoChamado(GestaoChamados.Models.ChamadoModel model)
+    {
+        string anexoHtml = "";
+        if (!string.IsNullOrEmpty(model.AnexoNomeArquivo))
+        {
+            anexoHtml = $@"<dt class=""col-sm-3"">Anexo</dt><dd class=""col-sm-9""><a href=""/uploads/{model.AnexoNomeArquivo}"" target=""_blank"">Ver Anexo</a></dd>";
+        }
+        
+        // Formatar descrição: se contém histórico do chatbot, exibir de forma organizada
+        string descricaoFormatada = model.Descricao;
+        
+        // DEBUG: mostrar se detectou o texto
+        bool isChatbotResolved = !string.IsNullOrEmpty(model.Descricao) && model.Descricao.Contains("=== PROBLEMA RESOLVIDO PELO CHATBOT ===");
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] Protocolo: {model.Protocolo}, isChatbotResolved: {isChatbotResolved}");
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] Descrição (primeiros 100 chars): {(model.Descricao?.Length > 100 ? model.Descricao.Substring(0, 100) : model.Descricao)}");
+        
+        if (isChatbotResolved)
+        {
+            // Quebrar em linhas e formatar como HTML
+            var linhas = model.Descricao?.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None) ?? Array.Empty<string>();
+            var htmlBuilder = new System.Text.StringBuilder();
+            htmlBuilder.Append("<div style='background-color:#f8f9fa; padding:15px; border-radius:8px; border-left:4px solid #28a745;'>");
+            htmlBuilder.Append("<div style='color:#28a745; font-weight:bold; font-size:1.1em; margin-bottom:10px;'>✅ PROBLEMA RESOLVIDO PELO CHATBOT</div>");
+            
+            bool dentroHistorico = false;
+            string resumoProblema = "";
+            string respostaResolucao = "";
+            
+            foreach (var linha in linhas)
+            {
+                if (linha.Contains("Histórico da Conversa:"))
+                {
+                    dentroHistorico = true;
+                    htmlBuilder.Append("<div style='margin-top:15px; font-weight:bold; color:#0d6efd;'>📝 Histórico da Conversa:</div>");
+                    htmlBuilder.Append("<div style='background:#fff; padding:10px; margin-top:5px; border-radius:5px; font-family:monospace; font-size:0.9em;'>");
+                    continue;
+                }
+                
+                if (linha.Contains("------------------------"))
+                {
+                    if (dentroHistorico)
+                    {
+                        htmlBuilder.Append("</div>");
+                        dentroHistorico = false;
+                    }
+                    continue;
+                }
+                
+                if (dentroHistorico && !string.IsNullOrWhiteSpace(linha))
+                {
+                    // Destacar usuário e chatbot
+                    if (linha.Contains("[Usuário]:"))
+                    {
+                        var msg = linha.Replace("[Usuário]:", "").Trim();
+                        htmlBuilder.Append($"<div style='margin:8px 0; color:#0d6efd;'><strong>👤 Usuário:</strong> {System.Web.HttpUtility.HtmlEncode(msg)}</div>");
+                        
+                        // Primeira mensagem do usuário é o resumo do problema
+                        if (string.IsNullOrEmpty(resumoProblema))
+                        {
+                            resumoProblema = msg;
+                        }
+                    }
+                    else if (linha.Contains("[Chatbot]:"))
+                    {
+                        var msg = linha.Replace("[Chatbot]:", "").Trim();
+                        htmlBuilder.Append($"<div style='margin:8px 0; color:#28a745;'><strong>🤖 Chatbot:</strong> {System.Web.HttpUtility.HtmlEncode(msg)}</div>");
+                        
+                        // Última mensagem do chatbot é a resposta de resolução
+                        respostaResolucao = msg;
+                    }
+                }
+                else if (linha.Contains("Status: Resolvido"))
+                {
+                    htmlBuilder.Append($"<div style='margin-top:15px; padding:10px; background:#d1e7dd; border-radius:5px; color:#0f5132;'><strong>ℹ️ {System.Web.HttpUtility.HtmlEncode(linha)}</strong></div>");
+                }
+                else if (linha.Contains("O problema foi resolvido com sucesso"))
+                {
+                    htmlBuilder.Append($"<div style='margin-top:5px; color:#198754;'>{System.Web.HttpUtility.HtmlEncode(linha)}</div>");
+                }
+            }
+            
+            // Adicionar resumo no topo
+            if (!string.IsNullOrEmpty(resumoProblema))
+            {
+                var resumoHtml = $"<div style='background:#e7f3ff; padding:10px; border-radius:5px; margin-bottom:10px; border-left:3px solid #0d6efd;'><strong>📋 Resumo do Problema:</strong><br/>{System.Web.HttpUtility.HtmlEncode(resumoProblema)}</div>";
+                htmlBuilder.Insert(htmlBuilder.ToString().IndexOf("📝 Histórico"), resumoHtml);
+            }
+            
+            if (!string.IsNullOrEmpty(respostaResolucao))
+            {
+                var resolucaoHtml = $"<div style='background:#d1f2eb; padding:10px; border-radius:5px; margin-top:10px; border-left:3px solid #28a745;'><strong>✅ Resposta que Resolveu:</strong><br/>{System.Web.HttpUtility.HtmlEncode(respostaResolucao)}</div>";
+                htmlBuilder.Append(resolucaoHtml);
+            }
+            
+            htmlBuilder.Append("</div>");
+            descricaoFormatada = htmlBuilder.ToString();
+        }
+        else
+        {
+            // Descrição normal sem formatação especial - mas com estilo básico
+            var descricaoEncoded = System.Web.HttpUtility.HtmlEncode(model.Descricao ?? "Sem descrição").Replace("\n", "<br/>");
+            descricaoFormatada = $"<div style='background-color:#f8f9fa; padding:15px; border-radius:8px; border-left:4px solid #6c757d;'>{descricaoEncoded}</div>";
+        }
+        
+        var resultado = new System.Text.StringBuilder();
+        resultado.Append(@"<dl class=""row"">");
+        resultado.Append($@"<dt class=""col-sm-3"">Protocolo</dt>");
+        resultado.Append($@"<dd class=""col-sm-9"">{model.Protocolo}</dd>");
+        resultado.Append($@"<dt class=""col-sm-3"">Assunto</dt>");
+        resultado.Append($@"<dd class=""col-sm-9"">{model.Assunto}</dd>");
+        resultado.Append($@"<dt class=""col-sm-3"">Descrição Detalhada</dt>");
+        resultado.Append($@"<dd class=""col-sm-9"">{descricaoFormatada}</dd>");
+        resultado.Append($@"<dt class=""col-sm-3"">Status</dt>");
+        resultado.Append($@"<dd class=""col-sm-9"">{model.Status}</dd>");
+        resultado.Append($@"<dt class=""col-sm-3"">Criado Por</dt>");
+        resultado.Append($@"<dd class=""col-sm-9"">{model.UsuarioCriadorEmail}</dd>");
+        resultado.Append($@"<dt class=""col-sm-3"">Técnico Responsável</dt>");
+        resultado.Append($@"<dd class=""col-sm-9"">{(model.TecnicoAtribuidoEmail ?? "Não atribuído")}</dd>");
+        resultado.Append($@"<dt class=""col-sm-3"">Data de Abertura</dt>");
+        resultado.Append($@"<dd class=""col-sm-9"">{model.DataAbertura.ToString("dd/MM/yyyy HH:mm")}</dd>");
+        resultado.Append(anexoHtml);
+        resultado.Append(@"</dl>");
+        
+        return Html.Raw(resultado.ToString());
+    }
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ticketId = "@Model.Protocolo";
+            const currentUserName = "@Html.Raw(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value)";
+            const currentUserEmail = "@User.Identity.Name";
+            const apiBaseUrl = "@(Context.Request.Scheme)://localhost:5142"; // URL da API
+            const jwtToken = "@(Context.Session.GetString("JwtToken"))"; // Token JWT da sessão
+
+            console.log('[SignalR Web] Conectando ao hub da API:', apiBaseUrl + '/supportHub');
+            console.log('[SignalR Web] JWT Token presente:', jwtToken ? 'SIM' : 'NÃO');
+
+            const supportConnection = new signalR.HubConnectionBuilder()
+                .withUrl(apiBaseUrl + "/supportHub", {
+                    accessTokenFactory: () => jwtToken
+                })
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // Atualiza tela do cliente quando técnico assume
+            supportConnection.on("ChamadoAssumido", function (protocolo) {
+                console.log('[SignalR Web] 🔔 Evento ChamadoAssumido recebido! Protocolo:', protocolo);
+                console.log('[SignalR Web] Ticket atual:', ticketId);
+                
+                if (protocolo == ticketId) {
+                    console.log('[SignalR Web] ✅ Técnico assumiu este chamado!');
+                    const waitingBlock = document.getElementById('waiting-for-tech-block');
+                    const chatBlock = document.querySelector('.chat-block');
+                    
+                    if (waitingBlock) {
+                        waitingBlock.style.display = 'none';
+                        console.log('[SignalR Web] Área de espera ocultada');
+                    }
+                    if (chatBlock) {
+                        chatBlock.style.display = 'block';
+                        console.log('[SignalR Web] Chat ao vivo exibido');
+                    }
+                } else {
+                    console.log('[SignalR Web] ⚠️ Protocolo diferente, ignorando evento');
+                }
+            });
+
+            // Exibe pesquisa de satisfação automaticamente no chat
+            supportConnection.on("ShowSatisfactionSurvey", function (ticketId, userEmail) {
+                console.log('[SignalR] ShowSatisfactionSurvey recebido:', ticketId, userEmail);
+                console.log('[SignalR] Usuário atual:', currentUserEmail);
+                
+                // Se o usuário atual é o criador do chamado, mostra a pesquisa
+                if (currentUserEmail.toLowerCase() === userEmail.toLowerCase()) {
+                    console.log('[SignalR] Exibindo pesquisa de satisfação para o usuário');
+                    const chatBlock = document.querySelector('.chat-block');
+                    const actionButtons = document.getElementById('chatbot-action-buttons');
+                    let satisfactionBlock = document.getElementById('satisfaction-block');
+                    
+                    // Esconde chat e botões de ação
+                    if (chatBlock) chatBlock.style.display = 'none';
+                    if (actionButtons) actionButtons.style.display = 'none';
+                    
+                    // Verifica se o bloco de satisfação existe
+                    if (satisfactionBlock) {
+                        satisfactionBlock.style.display = 'block';
+                        satisfactionBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        // Se o bloco não existe, cria dinamicamente (técnico marcou como resolvido)
+                        console.log('[SignalR] Criando bloco de satisfação');
+                        createSatisfactionBlock(ticketId, false); // ticketId, false = não é do chatbot
+                    }
+                } else {
+                    // Se é o técnico, redireciona para a lista
+                    console.log('[SignalR] Técnico - redirecionando para lista de chamados');
+                    window.location.href = '/Chamado/Index';
+                }
+            });
+
+            // Atualiza chat em tempo real
+            supportConnection.on("ReceiveMessage", function (userName, userEmail, messageText) {
+                addMessageToScreen(userName, userEmail, messageText);
+            });
+
+            supportConnection.start().then(function () {
+                return supportConnection.invoke("JoinTicketGroup", ticketId);
+            });
+
+            // Envio de mensagem
+            const sendForm = document.getElementById('send-form');
+            if (sendForm) {
+                sendForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    const messageInput = document.getElementById('message-input');
+                    const message = messageInput.value;
+                    if (message.trim() !== "") {
+                        supportConnection.invoke("SendMessage", ticketId, currentUserName, currentUserEmail, message)
+                            .catch(err => console.error("Erro ao enviar mensagem:", err.toString()));
+                        messageInput.value = "";
+                    }
+                });
+            }
+
+            // Função para criar bloco de satisfação dinamicamente
+            function createSatisfactionBlock(ticketIdParam, isChatbot = false) {
+                console.log('[Satisfação] Criando bloco de pesquisa de satisfação (ticketId:', ticketIdParam, ', chatbot:', isChatbot, ')');
+                
+                // Define mensagem contextual
+                const titulo = isChatbot 
+                    ? '✅ Chamado Finalizado!'
+                    : '✅ Chamado Resolvido!';
+                const mensagem = isChatbot 
+                    ? 'Seu chamado foi finalizado com sucesso.'
+                    : 'O técnico marcou seu chamado como resolvido.';
+                
+                const container = document.createElement('div');
+                container.id = 'satisfaction-block';
+                container.style.marginTop = '40px';
+                container.style.maxWidth = '700px';
+                container.style.marginLeft = 'auto';
+                container.style.marginRight = 'auto';
+                
+                container.innerHTML = `
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body text-center p-5">
+                            <div class="mb-4">
+                                <i class="bi bi-emoji-smile" style="font-size: 4rem; color: #28a745;"></i>
+                            </div>
+                            <h3 class="mb-4" style="color: #333; font-weight: 600;">${titulo}</h3>
+                            <p class="mb-3">${mensagem}</p>
+                            <h4 class="mb-4" style="color: #555;">Como você avalia o atendimento?</h4>
+                            
+                            <div id="rating-stars" class="mb-4 text-center" style="display: block !important; visibility: visible !important;">
+                                <button type="button" class="btn btn-outline-warning star" data-value="1" data-label="Muito Ruim" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">1 ⭐</button>
+                                <button type="button" class="btn btn-outline-warning star" data-value="2" data-label="Ruim" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">2 ⭐</button>
+                                <button type="button" class="btn btn-outline-warning star" data-value="3" data-label="Regular" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">3 ⭐</button>
+                                <button type="button" class="btn btn-outline-warning star" data-value="4" data-label="Bom" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">4 ⭐</button>
+                                <button type="button" class="btn btn-outline-warning star" data-value="5" data-label="Excelente" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">5 ⭐</button>
+                            </div>
+                            
+                            <div id="rating-label" class="mb-3 text-center" style="min-height: 30px; font-size: 1.1rem; font-weight: 600; color: #666;">
+                                Clique em um botão para avaliar
+                            </div>
+                            
+                            <div id="rating-result" class="mt-4"></div>
+                        </div>
+                    </div>
+                    <form id="ratingForm" method="post" action="/Chamado/Avaliar/${ticketIdParam}">
+                        <input type="hidden" id="ratingValue" name="rating" value="" />
+                    </form>
+                `;
+                
+                // Inserir o bloco após o chat-block ou no container principal
+                const chatBlock = document.querySelector('.chat-block');
+                if (chatBlock && chatBlock.parentNode) {
+                    chatBlock.parentNode.insertBefore(container, chatBlock.nextSibling);
+                } else {
+                    // Fallback: adicionar no final do container principal
+                    const mainContainer = document.querySelector('.container') || document.body;
+                    mainContainer.appendChild(container);
+                }
+                
+                console.log('[Satisfação] Bloco criado e inserido no DOM');
+                setupStarListeners();
+            }
+
+            // Configurar estrelas de avaliação (inicial e dinâmico)
+            function setupStarListeners() {
+                console.log('[Satisfação] Configurando listeners dos botões de avaliação');
+                const ratingLabel = document.getElementById('rating-label');
+                const allStars = document.querySelectorAll('.star');
+                
+                console.log('[Satisfação] Encontrados', allStars.length, 'botões de avaliação');
+                
+                allStars.forEach(function(star) {
+                    // Hover: mostra o label
+                    star.addEventListener('mouseenter', function() {
+                        const val = parseInt(this.getAttribute('data-value'));
+                        const label = this.getAttribute('data-label');
+                        
+                        if (ratingLabel && label) {
+                            ratingLabel.textContent = label;
+                            ratingLabel.style.color = getColorForRating(val);
+                        }
+                    });
+                    
+                    // Mouse sai: reseta o label se não houver seleção
+                    star.addEventListener('mouseleave', function() {
+                        const currentRating = document.getElementById('ratingValue')?.value || 0;
+                        
+                        if (ratingLabel && currentRating == 0) {
+                            ratingLabel.textContent = 'Clique em um botão para avaliar';
+                            ratingLabel.style.color = '#666';
+                        }
+                    });
+                    
+                    // Click: registra a avaliação
+                    star.addEventListener('click', function() {
+                        const rating = this.getAttribute('data-value');
+                        const label = this.getAttribute('data-label');
+                        console.log('[Satisfação] ✅ Avaliação selecionada:', rating, 'estrelas -', label);
+                        
+                        // Salva o rating
+                        document.getElementById('ratingValue').value = rating;
+                        
+                        // Remove classe 'selected' de todos os botões
+                        allStars.forEach(btn => btn.classList.remove('selected'));
+                        
+                        // Adiciona 'selected' apenas aos botões até o rating escolhido
+                        allStars.forEach(function(btn, index) {
+                            if (index < rating) {
+                                btn.classList.add('selected');
+                            }
+                        });
+                        
+                        // Atualiza o label permanentemente
+                        if (ratingLabel) {
+                            ratingLabel.textContent = `Você avaliou como: ${label}`;
+                            ratingLabel.style.color = getColorForRating(rating);
+                        }
+                        
+                        // Mostra mensagem de agradecimento
+                        const resultDiv = document.getElementById('rating-result');
+                        const starEmojis = '⭐'.repeat(rating);
+                        resultDiv.innerHTML = `
+                            <div style="font-size: 1.2rem; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 10px; animation: fadeIn 0.5s; text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 10px;">${starEmojis}</div>
+                                <div style="color: #155724; font-weight: 600; font-size: 1.3rem;">✅ Obrigado pela sua avaliação!</div>
+                                <div style="color: #155724; margin-top: 5px;">Sua opinião é muito importante para nós</div>
+                            </div>
+                        `;
+                        
+                        console.log('[Satisfação] Enviando formulário em 1.5s...');
+                        // Envia o formulário após 1.5s
+                        setTimeout(function() {
+                            console.log('[Satisfação] Submetendo formulário');
+                            document.getElementById('ratingForm').submit();
+                        }, 1500);
+                    });
+                });
+            }
+            
+            // Função auxiliar para retornar cor baseada no rating
+            function getColorForRating(rating) {
+                rating = parseInt(rating);
+                if (rating === 1) return '#dc3545'; // Vermelho
+                if (rating === 2) return '#fd7e14'; // Laranja
+                if (rating === 3) return '#ffc107'; // Amarelo
+                if (rating === 4) return '#20c997'; // Verde-azulado
+                if (rating === 5) return '#28a745'; // Verde
+                return '#666';
+            }
+
+            // Inicializa listeners das estrelas (se já existirem)
+            setupStarListeners();
+        });
+
+        function addMessageToScreen(senderName, senderEmail, messageText) {
+            const chatMessages = document.getElementById('chat-messages');
+            if (!chatMessages) return;
+            const messageClass = senderEmail.toLowerCase() === "@User.Identity.Name".toLowerCase() ? 'message-sent' : 'message-received';
+            const displayName = senderEmail.toLowerCase() === "@User.Identity.Name".toLowerCase() ? 'Você' : senderName;
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${messageClass}`;
+            const senderDiv = document.createElement('div');
+            senderDiv.className = 'sender-name';
+            senderDiv.innerHTML = displayName;
+            const textDiv = document.createElement('div');
+            textDiv.textContent = messageText;
+            messageDiv.appendChild(senderDiv);
+            messageDiv.appendChild(textDiv);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Verifica se a mensagem contém indicador de problema resolvido
+            // Verifica TANTO mensagens do usuário QUANTO do bot
+            checkForProblemResolved(messageText);
+        }
+
+        function checkForProblemResolved(messageText) {
+            console.log('[CHATBOT] Verificando mensagem:', messageText);
+            
+            // Palavras-chave que indicam que o USUÁRIO confirmou que o problema foi resolvido
+            const userResolutionKeywords = [
+                "resolvido", "funcionou", "ok", "pronto", "beleza", "perfeito",
+                "excelente", "muito obrigado", "obrigado", "consegui", "voltou",
+                "funcionando", "ta bom", "tá bom", "consegui resolver", "consegui resolvê",
+                "obg", "vlw", "valeu", "maravilhoso", "top", "ótimo", "uau",
+                "ficou bom", "ta certo", "tá certo", "ta funcionando", "tá funcionando",
+                "já funciona", "ja funciona", "agora funciona", "voltou funcionar",
+                "problema resolvido", "foi resolvido", "problema foi resolvido",
+                "conseguiu resolver", "ta resolvido", "tá resolvido", "ficou legal",
+                "voltou normal", "voltou ao normal", "ta certo", "funcionando bem",
+                "sim", "funciona", "melhorou", "ficou melhor", "deu certo", "certinho"
+            ];
+            
+            // Palavras-chave que indicam que o BOT está perguntando se resolveu
+            const botConfirmationKeywords = [
+                "funcionou", "resolveu", "problema foi resolvido", "conseguiu resolver",
+                "deu certo", "isso ajudou", "ficou bom", "deseja finalizar",
+                "posso encerrar", "tudo certo", "posso fechar"
+            ];
+
+            // Normaliza a mensagem para comparação
+            let normalized = messageText.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')        // Remove acentos
+                .trim();
+
+            console.log('[CHATBOT] Mensagem normalizada:', normalized);
+
+            // Verifica se é o BOT perguntando (tem que ter "?")
+            const isBotAsking = normalized.includes('?') && 
+                botConfirmationKeywords.some(keyword => normalized.includes(keyword));
+            
+            // Verifica se o USUÁRIO confirmou resolução
+            const isUserConfirming = userResolutionKeywords.some(keyword => normalized.includes(keyword));
+
+            console.log('[CHATBOT] Bot perguntando?', isBotAsking);
+            console.log('[CHATBOT] Usuário confirmando?', isUserConfirming);
+
+            if (isBotAsking || isUserConfirming) {
+                console.log('[CHATBOT] 🎉 Detectado pedido de finalização - Mostrando botões de ação...');
+                const actionButtons = document.getElementById('chatbot-action-buttons');
+                if (actionButtons) {
+                    actionButtons.style.display = 'block';
+                    console.log('[CHATBOT] ✅ Botões exibidos com sucesso!');
+                    
+                    // Scroll até os botões
+                    actionButtons.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    console.error('[CHATBOT] ❌ Elemento chatbot-action-buttons não encontrado!');
+                }
+            } else {
+                console.log('[CHATBOT] ❌ Nenhuma palavra de resolução detectada');
+            }
+        }
+
+        function fecharChamado() {
+            const ticketId = "@Model.Protocolo";
+            console.log('[CHATBOT] Tentando fechar chamado:', ticketId);
+            
+            if (confirm('Tem certeza que deseja fechar o chamado?')) {
+                fetch(`/Chamado/FecharChamado`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: ticketId })
+                })
+                .then(response => {
+                    console.log('[CHATBOT] Resposta do servidor:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('[CHATBOT] Dados da resposta:', data);
+                    if (data.success) {
+                        console.log('[CHATBOT] ✅ Chamado fechado - Mostrando pesquisa de satisfação');
+                        
+                        // Esconder o chat e os botões de ação
+                        const chatBlock = document.querySelector('.chat-block');
+                        const actionButtons = document.getElementById('chatbot-action-buttons');
+                        if (chatBlock) chatBlock.style.display = 'none';
+                        if (actionButtons) actionButtons.style.display = 'none';
+                        
+                        // Verificar se o bloco de satisfação já existe
+                        let satisfactionBlock = document.getElementById('satisfaction-block');
+                        console.log('[CHATBOT] Bloco de satisfação existe?', satisfactionBlock ? 'SIM' : 'NÃO');
+                        
+                        if (!satisfactionBlock) {
+                            console.log('[CHATBOT] Criando bloco de pesquisa de satisfação');
+                            createSatisfactionBlock(ticketId, true); // ticketId, true = é do chatbot
+                            satisfactionBlock = document.getElementById('satisfaction-block');
+                            console.log('[CHATBOT] Bloco criado?', satisfactionBlock ? 'SIM' : 'NÃO');
+                        }
+                        
+                        // Mostrar o bloco de satisfação
+                        if (satisfactionBlock) {
+                            satisfactionBlock.style.display = 'block';
+                            satisfactionBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            console.log('[CHATBOT] ✅ Pesquisa de satisfação exibida');
+                        } else {
+                            console.error('[CHATBOT] ❌ Erro: bloco de satisfação não foi criado ou encontrado');
+                        }
+                    } else {
+                        alert('❌ Erro: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('[CHATBOT] Erro ao fechar chamado:', error);
+                    alert('❌ Erro ao fechar o chamado: ' + error.message);
+                });
+            }
+        }
+
+        function continuarChamado() {
+            console.log('[CHATBOT] Continuando chamado...');
+            // Oculta os botões e permite continuar a conversa
+            const actionButtons = document.getElementById('chatbot-action-buttons');
+            if (actionButtons) {
+                actionButtons.style.display = 'none';
+                console.log('[CHATBOT] Botões ocultos');
+            }
+            const messageInput = document.getElementById('message-input');
+            if (messageInput) {
+                messageInput.focus();
+                console.log('[CHATBOT] Foco no input de mensagem');
+            }
+        }
+    </script>
+}

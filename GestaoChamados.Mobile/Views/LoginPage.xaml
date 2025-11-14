@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GestaoChamados.Mobile.ViewModels"
+             x:Class="GestaoChamados.Mobile.Views.LoginPage"
+             BackgroundColor="#F5F5F5"
+             Shell.NavBarIsVisible="False">
+    
+    <ContentPage.BindingContext>
+        <vm:LoginViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <Grid Padding="16" VerticalOptions="Center">
+            <!-- Card branco responsivo mobile -->
+            <Border BackgroundColor="White" 
+                   Stroke="#E5E7EB"
+                   StrokeThickness="1"
+                   Padding="24"
+                   MaximumWidthRequest="420"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   StrokeShape="RoundRectangle 12">
+                
+                <VerticalStackLayout Spacing="16">
+                    
+                    <!-- Logo Mobile -->
+                    <Image Source="png_logo_preto.png"
+                           WidthRequest="180"
+                           HeightRequest="60"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           Margin="0,8,0,8"/>
+                    
+                    <Label Text="GetBot"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="#0066CC"
+                           HorizontalOptions="Center"
+                           Margin="0,0,0,24"/>
+                    
+                    <!-- Email -->
+                    <Label Text="Email:" 
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           TextColor="#374151"
+                           Margin="0,0,0,4"/>
+                    <Entry Placeholder="seu@email.com"
+                           Text="{Binding Email}"
+                           Keyboard="Email"
+                           FontSize="15"
+                           TextColor="#1F2937"
+                           PlaceholderColor="#9CA3AF"
+                           BackgroundColor="#F9FAFB"
+                           HeightRequest="48"
+                           Margin="0,0,0,16"/>
+
+                    <!-- Senha -->
+                    <Label Text="Senha:" 
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           TextColor="#374151"
+                           Margin="0,0,0,4"/>
+                    <Entry Placeholder="Sua senha"
+                           Text="{Binding Senha}"
+                           IsPassword="True"
+                           FontSize="15"
+                           TextColor="#1F2937"
+                           PlaceholderColor="#9CA3AF"
+                           BackgroundColor="#F9FAFB"
+                           HeightRequest="48"
+                           Margin="0,0,0,20"/>
+
+                    <!-- Mensagem de erro -->
+                    <Label TextColor="#DC2626"
+                           FontSize="13"
+                           IsVisible="{Binding MensagemErro, Converter={StaticResource StringToBoolConverter}}"
+                           Text="{Binding MensagemErro}"
+                           HorizontalOptions="Center"
+                           Margin="0,0,0,8"
+                           HorizontalTextAlignment="Center"
+                           LineBreakMode="WordWrap"/>
+
+                    <!-- Botão de Login Mobile -->
+                    <Button Text="Entrar" 
+                            Command="{Binding LoginCommand}"
+                            BackgroundColor="#0066CC"
+                            TextColor="White"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            HeightRequest="50"
+                            CornerRadius="8"
+                            Margin="0,0,0,8"/>
+
+                    <!-- Indicador de carregamento -->
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                      IsVisible="{Binding IsBusy}"
+                                      Color="#0066CC"
+                                      HeightRequest="36"
+                                      WidthRequest="36"
+                                      HorizontalOptions="Center"
+                                      Margin="0,4,0,0"/>
+
+                    <!-- Info Mobile -->
+                    <Label Text="Use: admin@gestaochamados.com / admin123" 
+                           FontSize="11"
+                           TextColor="#6B7280"
+                           HorizontalOptions="Center"
+                           Margin="0,12,0,0"
+                           HorizontalTextAlignment="Center"
+                           LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GestaoChamados.Mobile.Views.GerenteDashboardPage"
+             Title="Dashboard Gerencial"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F5F6FA">
+
+    <Grid RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#0066CC" Padding="12,12">
+            <Grid RowDefinitions="Auto,Auto">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto">
+                    <Image Grid.Column="0"
+                           Source="png_logo_branco.png"
+                           HeightRequest="26"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Start"
+                           VerticalOptions="Center"/>
+                    
+                    <Label Grid.Column="1"
+                           Text="GetBot"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           VerticalOptions="Center"
+                           Margin="6,0,0,0"/>
+                    
+                    <Button Grid.Column="3"
+                            Text="Sair"
+                            TextColor="White"
+                            BackgroundColor="#0052A3"
+                            FontSize="12"
+                            Padding="12,6"
+                            CornerRadius="4"
+                            Clicked="OnLogoutClicked"/>
+                </Grid>
+                
+                <Label Grid.Row="1" 
+                       x:Name="UserInfoLabel" 
+                       TextColor="White" 
+                       FontSize="11" 
+                       Opacity="0.9"
+                       Margin="0,4,0,0"/>
+            </Grid>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="12" Padding="12">
+                
+                <!-- Cards de Status -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Border Grid.Column="0" BackgroundColor="#10B981" Padding="10,12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="✅" FontSize="20" HorizontalOptions="Center"/>
+                            <Label x:Name="ResolvidosLabel" Text="0" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White"/>
+                            <Label Text="Resolvidos" FontSize="9" HorizontalOptions="Center" TextColor="White" Opacity="0.9" LineBreakMode="NoWrap"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Column="1" BackgroundColor="#F59E0B" Padding="10,12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🔧" FontSize="20" HorizontalOptions="Center"/>
+                            <Label x:Name="EmAtendimentoLabel" Text="0" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White"/>
+                            <Label Text="Atendimento" FontSize="9" HorizontalOptions="Center" TextColor="White" Opacity="0.9" LineBreakMode="NoWrap"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Column="2" BackgroundColor="#EF4444" Padding="10,12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="⏳" FontSize="20" HorizontalOptions="Center"/>
+                            <Label x:Name="NaoAtendidosLabel" Text="0" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White"/>
+                            <Label Text="Aguardando" FontSize="9" HorizontalOptions="Center" TextColor="White" Opacity="0.9" LineBreakMode="NoWrap"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>                <!-- Estatísticas -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                    <Border Grid.Row="0" Grid.Column="0" BackgroundColor="White" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="👥 Usuários" FontSize="11" TextColor="#666"/>
+                            <Label x:Name="UsuariosLabel" Text="0" FontSize="22" FontAttributes="Bold" TextColor="#2563EB"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Row="0" Grid.Column="1" BackgroundColor="White" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🔧 Técnicos" FontSize="11" TextColor="#666"/>
+                            <Label x:Name="TecnicosLabel" Text="0" FontSize="22" FontAttributes="Bold" TextColor="#F59E0B"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Row="1" Grid.Column="0" BackgroundColor="White" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="📊 Chamados" FontSize="11" TextColor="#666"/>
+                            <Label x:Name="TotalChamadosLabel" Text="0" FontSize="22" FontAttributes="Bold" TextColor="#8B5CF6"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Row="1" Grid.Column="1" BackgroundColor="White" Padding="12" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="✔️ Taxa" FontSize="11" TextColor="#666"/>
+                            <Label x:Name="TaxaResolucaoLabel" Text="0%" FontSize="22" FontAttributes="Bold" TextColor="#10B981"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Avaliação Média -->
+                <Border BackgroundColor="White" Padding="12" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                    </Border.Shadow>
+                    <HorizontalStackLayout Spacing="12">
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="FillAndExpand">
+                            <Label Text="⭐ Avaliação Média" FontSize="11" TextColor="#666"/>
+                            <Label x:Name="AvaliacaoMediaLabel" Text="0.0" FontSize="22" FontAttributes="Bold" TextColor="#F59E0B"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Gráfico de Status -->
+                <Border BackgroundColor="White" Padding="12" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="📈 Distribuição" FontSize="14" FontAttributes="Bold" TextColor="#333"/>
+                        
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="80,*,40">
+                                <Label Grid.Column="0" Text="Aguardando" FontSize="11" TextColor="#666" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" BackgroundColor="#F5F5F5" StrokeThickness="0" HeightRequest="20" VerticalOptions="Center"
+                                        StrokeShape="RoundRectangle 5">
+                                    <Border x:Name="BarraAguardando" BackgroundColor="#EF4444" StrokeThickness="0" HeightRequest="20" WidthRequest="0" HorizontalOptions="Start"
+                                            StrokeShape="RoundRectangle 5"/>
+                                </Border>
+                                <Label Grid.Column="2" x:Name="AguardandoCountLabel" Text="0" FontSize="12" FontAttributes="Bold" TextColor="#EF4444" HorizontalOptions="End" VerticalOptions="Center"/>
+                            </Grid>
+                            
+                            <Grid ColumnDefinitions="80,*,40">
+                                <Label Grid.Column="0" Text="Atendimento" FontSize="11" TextColor="#666" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" BackgroundColor="#F5F5F5" StrokeThickness="0" HeightRequest="20" VerticalOptions="Center"
+                                        StrokeShape="RoundRectangle 5">
+                                    <Border x:Name="BarraEmAtendimento" BackgroundColor="#F59E0B" StrokeThickness="0" HeightRequest="20" WidthRequest="0" HorizontalOptions="Start"
+                                            StrokeShape="RoundRectangle 5"/>
+                                </Border>
+                                <Label Grid.Column="2" x:Name="EmAtendimentoCountLabel" Text="0" FontSize="12" FontAttributes="Bold" TextColor="#F59E0B" HorizontalOptions="End" VerticalOptions="Center"/>
+                            </Grid>
+                            
+                            <Grid ColumnDefinitions="80,*,40">
+                                <Label Grid.Column="0" Text="Resolvidos" FontSize="11" TextColor="#666" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" BackgroundColor="#F5F5F5" StrokeThickness="0" HeightRequest="20" VerticalOptions="Center"
+                                        StrokeShape="RoundRectangle 5">
+                                    <Border x:Name="BarraResolvidos" BackgroundColor="#10B981" StrokeThickness="0" HeightRequest="20" WidthRequest="0" HorizontalOptions="Start"
+                                            StrokeShape="RoundRectangle 5"/>
+                                </Border>
+                                <Label Grid.Column="2" x:Name="ResolvidosCountLabel" Text="0" FontSize="12" FontAttributes="Bold" TextColor="#10B981" HorizontalOptions="End" VerticalOptions="Center"/>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Performance dos Técnicos -->
+                <Border BackgroundColor="White" Padding="12" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🏆 Performance" FontSize="14" FontAttributes="Bold" TextColor="#333"/>
+                        
+                        <CollectionView x:Name="TecnicosCollectionView">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="#F9FAFB" Padding="10" Margin="0,0,0,6" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8">
+                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding Nome}" FontSize="13" FontAttributes="Bold" TextColor="#333"/>
+                                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding ChamadosResolvidos, StringFormat='{0} ✓'}" FontSize="12" FontAttributes="Bold" TextColor="#10B981" HorizontalOptions="End"/>
+                                            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Email}" FontSize="10" TextColor="#666" Margin="0,2,0,0"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Botões de Navegação -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="📊 Relatórios" BackgroundColor="#2563EB" TextColor="White" 
+                            CornerRadius="8" HeightRequest="44" FontSize="13" FontAttributes="Bold"
+                            Clicked="OnRelatoriosClicked"/>
+                    <Button Grid.Column="1" Text="👥 Usuários" BackgroundColor="#8B5CF6" TextColor="White" 
+                            CornerRadius="8" HeightRequest="44" FontSize="13" FontAttributes="Bold"
+                            Clicked="OnGerenciarUsuariosClicked"/>
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

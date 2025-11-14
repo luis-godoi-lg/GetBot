@@ -1,0 +1,90 @@
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ticketId = "@Model.Protocolo";
+            const currentUserName = "@Html.Raw(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value)";
+            const currentUserEmail = "@User.Identity.Name";
+
+            console.log("Iniciando chat - Ticket ID:", ticketId);
+            console.log("Usuário:", currentUserName, currentUserEmail);
+
+            const supportConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/supportHub")
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // Lógica para a TELA DE ESPERA do usuário
+            if (document.getElementById('waiting-for-tech-signal')) {
+                console.log("Configurando tela de espera");
+                supportConnection.on("TechnicianJoined", function () {
+                    console.log("Técnico entrou no chat");
+                    window.location.reload();
+                });
+            }
+
+            // Lógica para a TELA DE CHAT ao vivo
+            const chatContainer = document.querySelector('.chat-container');
+            if (chatContainer) {
+                console.log("Chat container encontrado, configurando chat");
+                
+                const sendForm = document.getElementById('send-form');
+                if (sendForm) {
+                    sendForm.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        const messageInput = document.getElementById('message-input');
+                        const message = messageInput.value;
+                        console.log("Enviando mensagem:", message);
+                        
+                        if (message.trim() !== "") {
+                            addMessageToScreen(currentUserName, currentUserEmail, message);
+                            supportConnection.invoke("SendMessage", ticketId, currentUserName, currentUserEmail, message)
+                                .then(() => console.log("Mensagem enviada com sucesso"))
+                                .catch(err => console.error("Erro ao enviar mensagem:", err.toString()));
+                            messageInput.value = "";
+                        }
+                    });
+                }
+                
+                supportConnection.on("ReceiveMessage", function (userName, userEmail, messageText) {
+                    console.log("Mensagem recebida:", userName, userEmail, messageText);
+                    if (userEmail.toLowerCase() !== currentUserEmail.toLowerCase()) {
+                        addMessageToScreen(userName, userEmail, messageText);
+                    }
+                });
+            }
+
+            function addMessageToScreen(senderName, senderEmail, messageText) {
+                console.log("Adicionando mensagem na tela:", senderName, messageText);
+                const chatMessages = document.getElementById('chat-messages');
+                if (!chatMessages) {
+                    console.error("Elemento chat-messages não encontrado");
+                    return;
+                }
+                
+                const messageClass = senderEmail.toLowerCase() === currentUserEmail.toLowerCase() ? 'message-sent' : 'message-received';
+                const displayName = senderEmail.toLowerCase() === currentUserEmail.toLowerCase() ? 'Você' : senderName;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${messageClass}`;
+                const senderDiv = document.createElement('div');
+                senderDiv.className = 'sender-name';
+                senderDiv.innerHTML = displayName;
+                const textDiv = document.createElement('div');
+                textDiv.textContent = messageText;
+                messageDiv.appendChild(senderDiv);
+                messageDiv.appendChild(textDiv);
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            supportConnection.start().then(function () {
+                console.log("Conexão SignalR estabelecida");
+                return supportConnection.invoke("JoinTicketGroup", ticketId);
+            }).then(function () {
+                console.log("Entrou no grupo do ticket:", ticketId);
+            }).catch(function (err) {
+                console.error("Erro na conexão SignalR:", err.toString());
+            });
+        });
+    </script>
+}

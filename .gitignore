@@ -1,0 +1,27 @@
+# Git ignore for GestaoChamados
+# Ignore specific appsettings files that may contain secrets
+GestaoChamados.API/appsettings.json
+GestaoChamados/appsettings.json
+
+# Ignore built binaries and obj folders
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+
+# Visual Studio cache
+.vs/
+
+# Rider
+.idea/
+
+# Ignore publish output folder used by build scripts
+Scripts/
+
+# Ignore local environment config files (keep samples in repo)
+# This will ignore any appsettings.*.json (e.g., appsettings.Production.json) that might contain secrets
+**/appsettings.*.json
+
+Build/

@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GestaoChamados.Mobile.MainPage"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <VerticalStackLayout
+        Padding="30"
+        Spacing="25"
+        VerticalOptions="Center"
+        HorizontalOptions="Center">
+        
+        <Label
+            Text="🎯 Gestão de Chamados Mobile"
+            FontSize="32"
+            FontAttributes="Bold"
+            HorizontalTextAlignment="Center"
+            TextColor="#512BD4" />
+
+        <Label
+            Text="Aplicação MAUI funcionando corretamente!"
+            FontSize="18"
+            HorizontalTextAlignment="Center"
+            TextColor="{DynamicResource Gray600}" />
+        
+        <BoxView
+            HeightRequest="2"
+            Color="#512BD4"
+            WidthRequest="200"
+            Margin="0,20" />
+
+        <Label
+            Text="✅ .NET 9.0 MAUI"
+            FontSize="16"
+            HorizontalTextAlignment="Center" />
+        
+        <Label
+            Text="✅ Windows 10/11 Ready"
+            FontSize="16"
+            HorizontalTextAlignment="Center" />
+        
+        <Label
+            Text="✅ API Integration"
+            FontSize="16"
+            HorizontalTextAlignment="Center" />
+
+    </VerticalStackLayout>
+
+</ContentPage>

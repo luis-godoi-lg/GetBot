@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Relatório Detalhado";
+    var relatorio = ViewData.Model as dynamic;
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">📋 Relatório Detalhado de Chamados</h1>
+
+    <a href="@Url.Action("Dashboard", "Manager")" class="btn btn-secondary mb-3">
+        ← Voltar ao Dashboard
+    </a>
+
+    <!-- Resumo Geral -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5>Resumo Geral</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Total de Chamados:</strong> <span class="text-primary">@relatorio.TotalChamados</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Abertos:</strong> <span class="text-warning">@relatorio.Abertos</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Resolvidos:</strong> <span class="text-success">@relatorio.Resolvidos</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Em Atendimento:</strong> <span class="text-info">@relatorio.EmAtendimento</span>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <strong>Não Atendidos:</strong> <span class="text-danger">@relatorio.NaoAtendidos</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desempenho por Técnico -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5>Desempenho por Técnico</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Técnico</th>
+                            <th>Total de Chamados</th>
+                            <th>Resolvidos</th>
+                            <th>Taxa de Resolução</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (relatorio.ChamadosPorTecnico != null && relatorio.ChamadosPorTecnico.Count > 0)
+                        {
+                            @foreach (var tecnico in relatorio.ChamadosPorTecnico)
+                            {
+                                var taxa = tecnico.Total > 0 ? Math.Round((double)tecnico.Resolvidos / tecnico.Total * 100, 2) : 0;
+                                <tr>
+                                    <td>@tecnico.Tecnico</td>
+                                    <td><span class="badge bg-primary">@tecnico.Total</span></td>
+                                    <td><span class="badge bg-success">@tecnico.Resolvidos</span></td>
+                                    <td>
+                                        <div class="progress" role="progressbar" aria-valuenow="@taxa" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar" style="width: @taxa%">@taxa%</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Nenhum técnico com chamados atribuídos.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="mt-4">
+        <button onclick="window.print()" class="btn btn-primary">
+            🖨️ Imprimir Relatório
+        </button>
+        <a href="@Url.Action("Dashboard", "Manager")" class="btn btn-secondary">
+            ← Voltar ao Dashboard
+        </a>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn {
+            display: none;
+        }
+    }
+</style>

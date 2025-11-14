@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GestaoChamados.Mobile.ViewModels"
+             x:Class="GestaoChamados.Mobile.Views.ChamadosPage"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+    
+    <ContentPage.BindingContext>
+        <vm:ChamadosViewModel />
+    </ContentPage.BindingContext>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        
+        <!-- Header Compacto Mobile -->
+        <Grid Grid.Row="0" BackgroundColor="#0066CC" Padding="12,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Linha 1: Logo e Botão Sair -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto">
+                <Image Grid.Column="0"
+                       Source="png_logo_branco.png"
+                       HeightRequest="28"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center"/>
+                
+                <Label Grid.Column="1"
+                       Text="GetBot"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       VerticalOptions="Center"
+                       Margin="8,0,0,0"/>
+                
+                <Button Grid.Column="3"
+                        Text="Sair" 
+                        Command="{Binding LogoutCommand}"
+                        BackgroundColor="#0052A3" 
+                        TextColor="White"
+                        HeightRequest="32"
+                        WidthRequest="60"
+                        CornerRadius="4"
+                        FontSize="12"
+                        Padding="0"/>
+            </Grid>
+            
+            <!-- Linha 2: User Info -->
+            <HorizontalStackLayout Grid.Row="1" Spacing="6" Margin="0,6,0,0">
+                <Label Text="👤" FontSize="13" TextColor="White" Opacity="0.9"/>
+                <Label Text="{Binding UserEmail}" 
+                       FontSize="12" 
+                       TextColor="White"
+                       Opacity="0.9"
+                       LineBreakMode="TailTruncation"/>
+            </HorizontalStackLayout>
+        </Grid>
+
+        <!-- Título e Botão Novo Chamado Responsivo -->
+        <VerticalStackLayout Grid.Row="1" BackgroundColor="White" Padding="16,16,16,12" Spacing="12">
+            
+            <Label Text="Meus Chamados" 
+                   FontSize="22" 
+                   FontAttributes="Bold" 
+                   TextColor="#333"/>
+
+            <Button Text="➕ Abrir Novo Chamado" 
+                    Command="{Binding NovoChamadoCommand}"
+                    BackgroundColor="#0066CC" 
+                    TextColor="White"
+                    HeightRequest="44"
+                    CornerRadius="6"
+                    FontSize="15"
+                    FontAttributes="Bold"/>
+        </VerticalStackLayout>
+
+        <!-- Lista de Chamados Mobile-Friendly -->
+        <ScrollView Grid.Row="2" Padding="12,0,12,12">
+            <VerticalStackLayout Spacing="12">
+                
+                <!-- Loading -->
+                <Label Text="⏳ Carregando..." 
+                       IsVisible="{Binding IsBusy}"
+                       FontSize="15" 
+                       HorizontalOptions="Center"
+                       TextColor="#666"
+                       Margin="0,30,0,0"/>
+
+                <!-- Collection View -->
+                <CollectionView ItemsSource="{Binding Chamados}"
+                               IsVisible="{Binding IsNotBusy}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="12" 
+                                   Margin="0,4" 
+                                   StrokeThickness="1"
+                                   Stroke="#E5E7EB"
+                                   BackgroundColor="White"
+                                   StrokeShape="RoundRectangle 8">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChamadosViewModel}}, Path=VerDetalhesCommand}"
+                                                         CommandParameter="{Binding .}"/>
+                                </Border.GestureRecognizers>
+                                
+                                <VerticalStackLayout Spacing="10">
+                                    
+                                    <!-- Header: Protocolo e Status -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding Protocolo}" 
+                                               FontSize="15"
+                                               FontAttributes="Bold"
+                                               TextColor="#0066CC"
+                                               VerticalOptions="Center"/>
+                                        
+                                        <Border Grid.Column="2"
+                                               Padding="8,4" 
+                                               StrokeThickness="0"
+                                               BackgroundColor="{Binding StatusColor}"
+                                               StrokeShape="RoundRectangle 4"
+                                               VerticalOptions="Center">
+                                            <Label Text="{Binding StatusTexto}" 
+                                                   TextColor="White" 
+                                                   FontSize="11"
+                                                   FontAttributes="Bold"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Título -->
+                                    <Label Text="{Binding Titulo}" 
+                                           FontSize="15"
+                                           FontAttributes="Bold"
+                                           TextColor="#1F2937"
+                                           LineBreakMode="WordWrap"
+                                           MaxLines="2"/>
+
+                                    <!-- Info Compacta -->
+                                    <VerticalStackLayout Spacing="4">
+                                        <Label FontSize="12" TextColor="#6B7280" LineBreakMode="TailTruncation">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="👤 " FontSize="11"/>
+                                                    <Span Text="{Binding UsuarioEmail}"/>
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                        
+                                        <Label FontSize="12" TextColor="#6B7280" LineBreakMode="TailTruncation">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="🔧 " FontSize="11"/>
+                                                    <Span Text="{Binding TecnicoNomeExibicao}"/>
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                        
+                                        <Label FontSize="11" TextColor="#9CA3AF">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="📅 " FontSize="10"/>
+                                                    <Span Text="{Binding DataCriacaoFormatada}"/>
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                    </VerticalStackLayout>
+
+                                    <!-- Botão Ver Detalhes -->
+                                    <Button Text="👁 Ver Detalhes" 
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChamadosViewModel}}, Path=VerDetalhesCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#0EA5E9" 
+                                            TextColor="White"
+                                            HeightRequest="38"
+                                            FontSize="13"
+                                            CornerRadius="6"
+                                            FontAttributes="Bold"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Nenhum chamado -->
+                <Label Text="📋 Nenhum chamado encontrado" 
+                       IsVisible="{Binding NenhumChamado}"
+                       FontSize="15" 
+                       HorizontalOptions="Center"
+                       TextColor="#9CA3AF"
+                       Margin="0,40,0,0"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

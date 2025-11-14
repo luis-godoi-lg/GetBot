@@ -1,0 +1,368 @@
+<Window x:Class="GestaoChamados.Desktop.RelatorioWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Relatório Detalhado" Height="700" Width="1100"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        Background="#F5F5F5">
+    
+    <Window.Resources>
+        <DropShadowEffect x:Key="shadow" 
+                         ShadowDepth="2" 
+                         BlurRadius="10" 
+                         Opacity="0.3" 
+                         Color="Gray"/>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2196F3" Padding="20">
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="📊 Relatório Detalhado" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Foreground="White"/>
+                    <TextBlock Text="Análise completa de chamados e desempenho" 
+                              FontSize="14" 
+                              Foreground="White" 
+                              Opacity="0.9"
+                              Margin="0,5,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="🏠 Dashboard" 
+                           Width="120"
+                           Height="35"
+                           Background="#4CAF50"
+                           Foreground="White"
+                           BorderThickness="0"
+                           Margin="0,0,10,0"
+                           Cursor="Hand"
+                           Click="VoltarDashboard_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                   CornerRadius="5"
+                                                   Padding="10,5">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#45a049"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="🚪 Sair" 
+                           Width="100"
+                           Height="35"
+                           Background="#f44336"
+                           Foreground="White"
+                           BorderThickness="0"
+                           Cursor="Hand"
+                           Click="LogoutButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                   CornerRadius="5"
+                                                   Padding="10,5">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#d32f2f"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Filtros -->
+            <Border Grid.Row="0" Background="White" 
+                   CornerRadius="10" Padding="20" Margin="0,0,0,20"
+                   Effect="{StaticResource shadow}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                        <TextBlock Text="Data Início" 
+                                  FontSize="12" 
+                                  Foreground="#666"
+                                  Margin="0,0,0,5"/>
+                        <DatePicker x:Name="DataInicioDatePicker" 
+                                   Width="150" 
+                                   Height="35"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                        <TextBlock Text="Data Fim" 
+                                  FontSize="12" 
+                                  Foreground="#666"
+                                  Margin="0,0,0,5"/>
+                        <DatePicker x:Name="DataFimDatePicker" 
+                                   Width="150" 
+                                   Height="35"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="2"
+                           Content="🔍 Filtrar" 
+                           Width="120"
+                           Height="35"
+                           VerticalAlignment="Bottom"
+                           FontSize="14"
+                           Background="#2196F3"
+                           Foreground="White"
+                           BorderThickness="0"
+                           Margin="0,0,20,0"
+                           Cursor="Hand"
+                           Click="Filtrar_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                   CornerRadius="5"
+                                                   Padding="10,5">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#1976D2"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Grid.Column="4"
+                           Content="📥 Exportar CSV" 
+                           Width="140"
+                           Height="35"
+                           VerticalAlignment="Bottom"
+                           FontSize="14"
+                           Background="#4CAF50"
+                           Foreground="White"
+                           BorderThickness="0"
+                           Cursor="Hand"
+                           Click="ExportarCSV_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                   CornerRadius="5"
+                                                   Padding="10,5">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#45a049"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Cards de Resumo -->
+            <Grid Grid.Row="1" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="White" 
+                       CornerRadius="10" Padding="15" Margin="0,0,5,0"
+                       Effect="{StaticResource shadow}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="📊 Total" 
+                                  FontSize="12" 
+                                  Foreground="#666" 
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TotalText" 
+                                  Text="0" 
+                                  FontSize="28" 
+                                  FontWeight="Bold" 
+                                  Foreground="#666"
+                                  HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="#f44336" 
+                       CornerRadius="10" Padding="15" Margin="5,0,5,0"
+                       Effect="{StaticResource shadow}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="⏳ Aguardando" 
+                                  FontSize="12" 
+                                  Foreground="White" 
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="NaoAtendidosText" 
+                                  Text="0" 
+                                  FontSize="28" 
+                                  FontWeight="Bold" 
+                                  Foreground="White"
+                                  HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="#2196F3" 
+                       CornerRadius="10" Padding="15" Margin="5,0,5,0"
+                       Effect="{StaticResource shadow}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="🔧 Em Atendimento" 
+                                  FontSize="12" 
+                                  Foreground="White" 
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="EmAtendimentoText" 
+                                  Text="0" 
+                                  FontSize="28" 
+                                  FontWeight="Bold" 
+                                  Foreground="White"
+                                  HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Background="#4CAF50" 
+                       CornerRadius="10" Padding="15" Margin="5,0,0,0"
+                       Effect="{StaticResource shadow}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="✅ Resolvidos" 
+                                  FontSize="12" 
+                                  Foreground="White" 
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="ResolvidosText" 
+                                  Text="0" 
+                                  FontSize="28" 
+                                  FontWeight="Bold" 
+                                  Foreground="White"
+                                  HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Tabela de Técnicos -->
+            <Border Grid.Row="2" Background="White" 
+                   CornerRadius="10" Padding="20"
+                   Effect="{StaticResource shadow}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" 
+                              Text="👥 Desempenho por Técnico" 
+                              FontSize="18" 
+                              FontWeight="SemiBold" 
+                              Foreground="#333"
+                              Margin="0,0,0,15"/>
+
+                    <DataGrid Grid.Row="1"
+                             x:Name="TecnicosDataGrid" 
+                             AutoGenerateColumns="False"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             IsReadOnly="True"
+                             GridLinesVisibility="None"
+                             HeadersVisibility="Column"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             RowHeight="45"
+                             AlternatingRowBackground="#F9F9F9">
+                        
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Técnico" 
+                                               Binding="{Binding Tecnico, Mode=OneWay}" 
+                                               Width="*"
+                                               FontWeight="SemiBold"/>
+                            <DataGridTextColumn Header="Total de Chamados" 
+                                               Binding="{Binding Total, Mode=OneWay}" 
+                                               Width="150"/>
+                            <DataGridTextColumn Header="Resolvidos" 
+                                               Binding="{Binding Resolvidos, Mode=OneWay}" 
+                                               Width="150"/>
+                            <DataGridTextColumn Header="Nota Média" 
+                                               Binding="{Binding NotaMediaText, Mode=OneWay}" 
+                                               Width="150">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="#F59E0B"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="Taxa de Resolução" Width="220">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ProgressBar Value="{Binding TaxaResolucao, Mode=OneWay}" 
+                                                        Minimum="0" 
+                                                        Maximum="100" 
+                                                        Width="100" 
+                                                        Height="20"
+                                                        Foreground="#4CAF50"/>
+                                            <TextBlock Text="{Binding TaxaResolucaoText, Mode=OneWay}" 
+                                                      Margin="10,0,0,0" 
+                                                      VerticalAlignment="Center"
+                                                      FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

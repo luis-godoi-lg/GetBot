@@ -1,0 +1,162 @@
+<Window x:Class="GestaoChamados.Desktop.CustomMessageBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mensagem" 
+        Height="300" 
+        Width="450"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True">
+
+    <Window.Resources>
+        <!-- Animação de entrada -->
+        <Storyboard x:Key="ShowAnimation">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                           From="0" To="1" Duration="0:0:0.2"/>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                           From="0.8" To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase EasingMode="EaseOut" Amplitude="0.3"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                           From="0.8" To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase EasingMode="EaseOut" Amplitude="0.3"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Estilo dos botões -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="20,10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" 
+            CornerRadius="15"
+            BorderThickness="0">
+        <Border.Effect>
+            <DropShadowEffect Color="#333333" 
+                            Direction="270" 
+                            ShadowDepth="2" 
+                            BlurRadius="20" 
+                            Opacity="0.3"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header com ícone -->
+            <Border Grid.Row="0" 
+                    x:Name="HeaderBorder"
+                    Background="#0066CC" 
+                    CornerRadius="15,15,0,0"
+                    Height="80">
+                <Grid>
+                    <!-- Ícone grande centralizado -->
+                    <Viewbox Width="50" Height="50">
+                        <TextBlock x:Name="IconText" 
+                                   Text="ℹ" 
+                                   FontSize="48"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontWeight="Bold"/>
+                    </Viewbox>
+                </Grid>
+            </Border>
+
+            <!-- Conteúdo -->
+            <StackPanel Grid.Row="1" 
+                        Margin="30,25"
+                        VerticalAlignment="Center">
+                <!-- Título -->
+                <TextBlock x:Name="TitleText"
+                           Text="Título"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#333"
+                           TextAlignment="Center"
+                           Margin="0,0,0,10"
+                           TextWrapping="Wrap"/>
+
+                <!-- Mensagem -->
+                <TextBlock x:Name="MessageText"
+                           Text="Mensagem"
+                           FontSize="14"
+                           Foreground="#666"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           LineHeight="22"/>
+            </StackPanel>
+
+            <!-- Botões -->
+            <StackPanel Grid.Row="2" 
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="20,0,20,25">
+                
+                <Button x:Name="OkButton"
+                        Content="OK"
+                        Click="OkButton_Click"
+                        Style="{StaticResource ModernButton}"
+                        Background="#0066CC"
+                        Visibility="Visible"/>
+
+                <Button x:Name="YesButton"
+                        Content="Sim"
+                        Click="YesButton_Click"
+                        Style="{StaticResource ModernButton}"
+                        Background="#28A745"
+                        Visibility="Collapsed"/>
+
+                <Button x:Name="NoButton"
+                        Content="Não"
+                        Click="NoButton_Click"
+                        Style="{StaticResource ModernButton}"
+                        Background="#6C757D"
+                        Visibility="Collapsed"/>
+
+                <Button x:Name="CancelButton"
+                        Content="Cancelar"
+                        Click="CancelButton_Click"
+                        Style="{StaticResource ModernButton}"
+                        Background="#DC3545"
+                        Visibility="Collapsed"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

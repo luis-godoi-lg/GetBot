@@ -1,0 +1,51 @@
+@using GestaoChamados.Shared.DTOs
+@model CriarEditarUsuarioDto
+
+@{
+    var isEdit = Model != null && Model.Id.HasValue && Model.Id > 0;
+}
+
+<div class="mb-3">
+    <label for="Nome" class="form-label">Nome Completo</label>
+    <input type="text" class="form-control" id="Nome" name="Nome" value="@(Model?.Nome ?? "")" required>
+</div>
+
+<div class="mb-3">
+    <label for="Email" class="form-label">Email</label>
+    <input type="email" class="form-control" id="Email" name="Email" value="@(Model?.Email ?? "")" required>
+</div>
+
+<div class="mb-3">
+    <label for="Senha" class="form-label">Senha @(isEdit ? "(deixe em branco para manter)" : "")</label>
+    <input type="password" class="form-control" id="Senha" name="Senha" @(isEdit ? "" : "required")>
+</div>
+
+<div class="mb-3">
+    <label for="Role" class="form-label">Papel (Tipo de Usuário)</label>
+    <select class="form-select" id="Role" name="Role" required>
+        <option value="">-- Selecione um papel --</option>
+        @foreach (var role in new[] { "Usuario", "Tecnico", "Gerente" })
+        {
+            var displayText = role == "Usuario" ? "👤 Usuário (Cria chamados)" :
+                            role == "Tecnico" ? "🔧 Técnico (Atende chamados)" :
+                            "👨‍💼 Gerente (Gerencia sistema)";
+            <option value="@role" selected="@((Model?.Role == role ? "selected" : null))">@displayText</option>
+        }
+    </select>
+</div>
+
+<div class="d-grid gap-2">
+    <button type="submit" class="btn btn-primary btn-lg">
+        @if (isEdit)
+        {
+            <text>💾 Atualizar Usuário</text>
+        }
+        else
+        {
+            <text>➕ Criar Usuário</text>
+        }
+    </button>
+    <a href="@Url.Action("GerenciarUsuarios", "Manager")" class="btn btn-secondary btn-lg">
+        ← Cancelar
+    </a>
+</div>

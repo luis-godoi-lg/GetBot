@@ -1,0 +1,130 @@
+﻿@model IEnumerable<GestaoChamados.Models.ChamadoModel>
+@{
+    ViewData["Title"] = "Fila de Atendimento ao Vivo";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p class="text-muted">Clientes aguardando para iniciar o atendimento.</p>
+<hr />
+
+<div class="card">
+    <div class="card-body">
+        <ul id="fila-atendimento" class="list-group list-group-flush">
+            @if (Model.Any())
+            {
+                @foreach (var chamado in Model)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center" id="chamado-@chamado.Protocolo">
+                        <div>
+                            <strong>@chamado.UsuarioCriadorEmail</strong><br>
+                            <small class="text-muted">@chamado.Assunto</small><br>
+                            <span class="badge bg-info">#@chamado.Protocolo</span>
+                            <small class="text-muted">• @chamado.DataAbertura.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                        <form asp-controller="Chamado" asp-action="AssumirChamado" asp-route-id="@chamado.Protocolo" method="post" style="margin: 0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-primary btn-sm">Atender</button>
+                        </form>
+                    </li>
+                }
+            }
+            else
+            {
+                <li class="list-group-item text-muted" id="fila-vazia">Nenhum cliente na fila.</li>
+            }
+        </ul>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("[FilaDeAtendimento] Página carregada");
+            console.log("[FilaDeAtendimento] Chamados na fila:", @Model.Count());
+            
+            // Handler para botões "Atender"
+            document.querySelectorAll('form[action*="AssumirChamado"]').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const btn = this.querySelector('button[type="submit"]');
+                    console.log("[FilaDeAtendimento] Botão Atender clicado:", this.action);
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Assumindo...';
+                });
+            });
+            
+            const apiBaseUrl = "@(Context.Request.Scheme)://localhost:5142";
+            const jwtToken = "@(Context.Session.GetString("JwtToken"))";
+            
+            console.log('[SignalR Fila] Conectando ao hub da API:', apiBaseUrl + '/supportHub');
+            
+            const supportConnection = new signalR.HubConnectionBuilder()
+                .withUrl(apiBaseUrl + "/supportHub", {
+                    accessTokenFactory: () => jwtToken
+                })
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            supportConnection.on("NovoUsuarioNaFila", function (chamado) {
+                console.log("[FilaDeAtendimento] Novo chamado recebido:", chamado);
+                
+                const filaLista = document.getElementById("fila-atendimento");
+                const itemVazio = document.getElementById("fila-vazia");
+
+                if(itemVazio) { itemVazio.remove(); }
+
+                const protocolo = chamado.Protocolo || chamado.protocolo || chamado.Id || chamado.id;
+                const email = chamado.UsuarioCriadorEmail || chamado.usuarioCriadorEmail || chamado.UsuarioEmail || chamado.usuarioEmail;
+                const assunto = chamado.Assunto || chamado.assunto || chamado.Titulo || chamado.titulo;
+                
+                console.log(`[FilaDeAtendimento] Adicionando chamado #${protocolo} de ${email}`);
+
+                const novoItem = document.createElement("li");
+                novoItem.className = "list-group-item d-flex justify-content-between align-items-center";
+                novoItem.id = `chamado-${protocolo}`;
+                novoItem.innerHTML = `
+                    <div>
+                        <strong>${email}</strong><br>
+                        <small class="text-muted">${assunto}</small><br>
+                        <span class="badge bg-info">#${protocolo}</span>
+                        <small class="text-muted">• Agora</small>
+                    </div>
+                    <form method="post" action="/Chamado/AssumirChamado?id=${protocolo}">
+                        <button type="submit" class="btn btn-primary btn-sm">Atender</button>
+                    </form>
+                `;
+                
+                // Adiciona handler ao novo formulário
+                const newForm = novoItem.querySelector('form');
+                newForm.addEventListener('submit', function(e) {
+                    const btn = this.querySelector('button[type="submit"]');
+                    console.log("[FilaDeAtendimento] Botão Atender clicado (novo):", this.action);
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Assumindo...';
+                });
+                
+                filaLista.appendChild(novoItem);
+                
+                // Notificação visual
+                if (Notification.permission === "granted") {
+                    new Notification("Novo Cliente na Fila", {
+                        body: `${email} - ${assunto}`,
+                        icon: "/favicon.ico"
+                    });
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            });
+
+            supportConnection.start().then(function () {
+                console.log("[FilaDeAtendimento] SignalR conectado");
+                return supportConnection.invoke("JoinTechnicianGroup");
+            }).then(function() {
+                console.log("[FilaDeAtendimento] Entrou no grupo de técnicos");
+            }).catch(function (err) {
+                console.error("[FilaDeAtendimento] Erro SignalR:", err.toString());
+            });
+        });
+    </script>
+}

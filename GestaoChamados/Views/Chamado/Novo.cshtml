@@ -1,0 +1,672 @@
+﻿@model GestaoChamados.Models.NovoChamadoViewModel
+@using System.Security.Claims
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Abrir Novo Chamado";
+}
+
+<style>
+    /* CSS para o Chat */
+    .chat-container {
+        max-width: 600px;
+        margin: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 60vh;
+        background-color: #f9f9f9;
+    }
+
+    .chat-messages {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .message {
+        padding: 10px 15px;
+        border-radius: 18px;
+        max-width: 80%;
+        line-height: 1.4;
+        display: inline-block;
+    }
+
+    .bot-message {
+        background-color: #e9e9eb;
+        color: #333;
+        align-self: flex-start;
+    }
+
+    .user-message {
+        background-color: #007bff;
+        color: white;
+        align-self: flex-end;
+    }
+
+    .chat-input-form {
+        border-top: 1px solid #ddd;
+        padding: 10px;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .chat-input-form input[type="text"] {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 10px 15px;
+        }
+
+        .chat-input-form button {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+
+    .typing-indicator {
+        padding: 10px 15px;
+        background-color: #e9e9eb;
+        border-radius: 18px;
+        align-self: flex-start;
+        max-width: 80px;
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 3px;
+    }
+
+    .typing-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #999;
+        animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @@keyframes typing {
+        0%, 80%, 100% { 
+            transform: scale(0);
+            opacity: 0.5;
+        } 
+        40% { 
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+</style>
+
+<div class="chat-container">
+    <div id="chat-messages" class="chat-messages">
+    </div>
+
+    <div id="chat-input-area" class="chat-input-form">
+        <input type="text" id="userInput" class="form-control" placeholder="Descreva seu problema de TI..." autocomplete="off" form="chat-input-form-sender">
+        <button type="submit" form="chat-input-form-sender" class="btn btn-primary" id="send-btn">➤</button>
+    </div>
+    <form id="chat-input-form-sender" style="display:none;"></form>
+</div>
+
+<div id="escalation-area" class="text-center mt-2" style="display: none; max-width: 600px; margin: 15px auto 0 auto;">
+    <button id="talk-to-agent-btn" class="btn btn-secondary btn-sm">Falar com Atendente Humano</button>
+    <button id="create-ticket-btn" class="btn btn-success btn-sm" style="display: none;">Criar Chamado Automaticamente</button>
+    <button id="mark-as-resolved-btn" class="btn btn-success btn-sm ms-2">✅ Problema Resolvido</button>
+</div>
+
+<div id="resolution-area" class="text-center mt-3" style="display: none; max-width: 600px; margin: 15px auto 0 auto; padding: 20px; background-color: #d4edda; border: 2px solid #28a745; border-radius: 8px;">
+    <div style="margin-bottom: 15px;">
+        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+    </div>
+    <h5 class="text-success mb-3">🎉 Ótimo! Problema Resolvido!</h5>
+    <p class="mb-3">Ficamos felizes em ajudar! Deseja finalizar o atendimento?</p>
+    <button id="finish-resolved-btn" class="btn btn-success btn-lg">
+        <i class="bi bi-check2-circle"></i> Sim, Finalizar Atendimento
+    </button>
+    <button id="continue-chat-btn" class="btn btn-outline-secondary btn-sm mt-2">
+        Continuar Conversando
+    </button>
+</div>
+
+<div id="waiting-area" class="text-center mt-3" style="display: none; max-width: 600px; margin: 15px auto 0 auto;">
+    <div class="alert alert-info">
+        <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="alert-heading">🎫 Chamado Criado com Sucesso!</h5>
+        <p>Seu chamado foi registrado e você está na <strong>fila de atendimento</strong>.</p>
+        <p class="mb-0">Um técnico irá atendê-lo em breve. Aguarde na página do chamado.</p>
+        <hr>
+        <p class="mb-0"><small>Redirecionando para detalhes do chamado...</small></p>
+    </div>
+</div>
+
+<div id="satisfaction-area" class="text-center mt-3" style="display: none; max-width: 700px; margin: 30px auto 0 auto;">
+    <div class="card shadow-lg border-0">
+        <div class="card-body text-center p-5">
+            <div class="mb-4">
+                <i class="bi bi-emoji-smile" style="font-size: 4rem; color: #28a745;"></i>
+            </div>
+            <h3 class="mb-4" style="color: #333; font-weight: 600;">✅ Chamado Finalizado!</h3>
+            <p class="mb-3">Seu chamado foi resolvido com sucesso pelo chatbot.</p>
+            <h4 class="mb-4" style="color: #555;">Como você avalia o atendimento?</h4>
+            
+            <div id="rating-stars-chatbot" class="mb-4 text-center">
+                <button type="button" class="btn btn-outline-warning star-chatbot" data-value="1" data-label="Muito Ruim">1 ⭐</button>
+                <button type="button" class="btn btn-outline-warning star-chatbot" data-value="2" data-label="Ruim">2 ⭐</button>
+                <button type="button" class="btn btn-outline-warning star-chatbot" data-value="3" data-label="Regular">3 ⭐</button>
+                <button type="button" class="btn btn-outline-warning star-chatbot" data-value="4" data-label="Bom">4 ⭐</button>
+                <button type="button" class="btn btn-outline-warning star-chatbot" data-value="5" data-label="Excelente">5 ⭐</button>
+            </div>
+            
+            <div id="rating-label-chatbot" class="mb-3 text-center" style="min-height: 30px; font-size: 1.1rem; font-weight: 600; color: #666;">
+                Clique em um botão para avaliar
+            </div>
+            
+            <div id="rating-result-chatbot" class="mt-4"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .star-chatbot {
+        margin: 0 8px;
+        font-size: 1.3rem;
+        padding: 12px 24px;
+        border-width: 2px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .star-chatbot:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        background-color: #ffc107;
+        color: white;
+        border-color: #ffc107;
+    }
+    
+    #satisfaction-area {
+        animation: slideInSatisfaction 0.6s ease-out;
+    }
+    
+    #satisfaction-area .card {
+        border-radius: 20px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+    
+    @@keyframes slideInSatisfaction {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<form asp-action="Novo" method="post" id="hidden-form" style="display:none;" enctype="multipart/form-data">
+    <input asp-for="Assunto" />
+    <input asp-for="Descricao" />
+</form>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Elementos do HTML
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInputForm = document.getElementById('chat-input-form-sender');
+            const userInput = document.getElementById('userInput');
+            const sendBtn = document.getElementById('send-btn');
+            const escalationArea = document.getElementById('escalation-area');
+            const talkToAgentBtn = document.getElementById('talk-to-agent-btn');
+            const createTicketBtn = document.getElementById('create-ticket-btn');
+            const chatInputArea = document.getElementById('chat-input-area');
+            const waitingArea = document.getElementById('waiting-area');
+            const resolutionArea = document.getElementById('resolution-area');
+            const finishResolvedBtn = document.getElementById('finish-resolved-btn');
+            const continueChatBtn = document.getElementById('continue-chat-btn');
+            const markAsResolvedBtn = document.getElementById('mark-as-resolved-btn');
+
+            let conversationHistory = [];
+            let suggestedTicketData = null;
+            let isWaitingResponse = false;
+
+            // Função para adicionar mensagem na tela
+            function addMessage(text, sender) {
+                // Registra no histórico para uso em criação de chamado
+                conversationHistory.push({ sender, text });
+                
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', sender === 'bot' ? 'bot-message' : 'user-message');
+                messageElement.innerHTML = text;
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Função para mostrar indicador de digitação
+            function showTypingIndicator() {
+                const typingElement = document.createElement('div');
+                typingElement.classList.add('typing-indicator');
+                typingElement.id = 'typing-indicator';
+                typingElement.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+                chatMessages.appendChild(typingElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Função para remover indicador de digitação
+            function hideTypingIndicator() {
+                const typingElement = document.getElementById('typing-indicator');
+                if (typingElement) {
+                    typingElement.remove();
+                }
+            }
+
+            // Inicia a conversa
+            function startConversation() {
+                addMessage("👋 Oi! Sou o assistente de TI. Qual seu problema?", 'bot');
+            }
+
+            // Processa mensagem com IA
+            async function processMessage(userText) {
+                if (isWaitingResponse) return;
+                
+                isWaitingResponse = true;
+                sendBtn.disabled = true;
+                
+                addMessage(userText, 'user');
+                showTypingIndicator();
+
+                try {
+                    const response = await fetch('/Chamado/ProcessChatbotMessage', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: userText })
+                    });
+
+                    const data = await response.json();
+                    
+                    hideTypingIndicator();
+                    
+                    if (data.success) {
+                        addMessage(data.message, 'bot');
+                        
+                        // CORREÇÃO: DESABILITADO finalização automática
+                        // O sistema NÃO deve finalizar automaticamente baseado em palavras-chave
+                        // O usuário deve clicar manualmente no botão se quiser finalizar
+                        // if (data.isProblemResolved && data.askingConfirmation) {
+                        //     console.log('[Chatbot] Mostrando botões de confirmação de resolução');
+                        //     chatInputArea.style.display = 'none';
+                        //     escalationArea.style.display = 'none';
+                        //     resolutionArea.style.display = 'block';
+                        // } else 
+                        if (data.shouldCreateTicket) {
+                            suggestedTicketData = data.ticketData;
+                            createTicketBtn.style.display = 'inline-block';
+                            escalationArea.style.display = 'block';
+                            chatInputArea.style.display = 'none';
+                        } else if (!data.isITRelated) {
+                            // Se não for relacionado a TI, mostra opção de falar com atendente
+                            escalationArea.style.display = 'block';
+                        } else {
+                            // Continua a conversa - sempre mostra opções (incluindo "Problema Resolvido")
+                            escalationArea.style.display = 'block';
+                        }
+                    } else {
+                        addMessage(data.message || "Desculpe, ocorreu um erro. Tente novamente.", 'bot');
+                        escalationArea.style.display = 'block';
+                    }
+                } catch (error) {
+                    hideTypingIndicator();
+                    console.error('Erro:', error);
+                    addMessage("Desculpe, estou com problemas técnicos. Por favor, fale com um atendente.", 'bot');
+                    escalationArea.style.display = 'block';
+                } finally {
+                    isWaitingResponse = false;
+                    sendBtn.disabled = false;
+                }
+            }
+
+            // Event listener para envio de mensagem
+            chatInputForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const userText = userInput.value.trim();
+                if (userText && !isWaitingResponse) {
+                    userInput.value = '';
+                    processMessage(userText);
+                }
+            });
+
+            // Criar chamado automaticamente
+            createTicketBtn.addEventListener('click', async function() {
+                if (!suggestedTicketData) return;
+                
+                chatInputArea.style.display = 'none';
+                escalationArea.style.display = 'none';
+                waitingArea.style.display = 'block';
+
+                try {
+                    const response = await fetch('/Chamado/CreateTicketFromChatbot', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(suggestedTicketData)
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        window.location.href = `/Chamado/Detalhes/${data.ticketId}`;
+                    } else {
+                        addMessage("Erro ao criar chamado. Por favor, tente falar com um atendente.", 'bot');
+                        escalationArea.style.display = 'block';
+                        waitingArea.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Erro ao criar chamado:', error);
+                    addMessage("Erro ao criar chamado. Por favor, tente falar com um atendente.", 'bot');
+                    escalationArea.style.display = 'block';
+                    waitingArea.style.display = 'none';
+                }
+            });
+
+            // Falar com atendente (método antigo)
+            talkToAgentBtn.addEventListener('click', function() {
+                escalationArea.style.display = 'none';
+                chatInputArea.style.display = 'none';
+                waitingArea.style.display = 'block';
+
+                addMessage("<i>Transferindo para um atendente humano...</i>", 'bot');
+
+                // Pega o primeiro problema mencionado como assunto
+                const firstUserMessage = (conversationHistory.find(m => m.sender === 'user')?.text || userInput.value || "Suporte técnico solicitado").trim();
+                
+                // Monta a descrição com o histórico. Garante conteúdo não vazio.
+                let fullDescription = conversationHistory.map(m => `${m.sender}: ${m.text}`).join('\n').trim();
+                if (!fullDescription) {
+                    fullDescription = firstUserMessage || "Descrição não informada pelo usuário.";
+                }
+
+                fetch('/Chamado/EntrarNaFila', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        assunto: firstUserMessage.length > 50 ? firstUserMessage.substring(0, 47) + "..." : firstUserMessage,
+                        descricao: fullDescription 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('[Fila] ✅ Chamado criado com sucesso:', data.ticketId);
+                        console.log('[Fila] Redirecionando para página de detalhes...');
+                        // REDIRECIONA IMEDIATAMENTE PARA A PÁGINA DE DETALHES (com área de espera)
+                        window.location.href = `/Chamado/Detalhes/${data.ticketId}`;
+                    } else {
+                        addMessage("<i>Erro ao transferir para atendente. Tente novamente.</i>", 'bot');
+                        escalationArea.style.display = 'block';
+                        waitingArea.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    addMessage("<i>Erro de comunicação. Tente novamente.</i>", 'bot');
+                    escalationArea.style.display = 'block';
+                    waitingArea.style.display = 'none';
+                });
+            });
+
+            // Função para conectar ao SignalR e aguardar técnico
+            function connectToSignalRAndWait(ticketId) {
+                const apiBaseUrl = "@(Context.Request.Scheme)://localhost:5142";
+                const jwtToken = "@(Context.Session.GetString("JwtToken"))";
+                
+                console.log('[SignalR Fila] ===== INICIANDO CONEXÃO =====');
+                console.log('[SignalR Fila] Ticket ID:', ticketId);
+                console.log('[SignalR Fila] API URL:', apiBaseUrl + '/supportHub');
+                console.log('[SignalR Fila] JWT presente:', jwtToken ? 'SIM' : 'NÃO');
+                
+                const supportConnection = new signalR.HubConnectionBuilder()
+                    .withUrl(apiBaseUrl + "/supportHub", {
+                        accessTokenFactory: () => jwtToken
+                    })
+                    .configureLogging(signalR.LogLevel.Information)
+                    .build();
+
+                // Quando técnico assumir, redireciona para o chat
+                supportConnection.on("ChamadoAssumido", function (protocolo) {
+                    console.log('[SignalR Fila] 🔔 Evento ChamadoAssumido recebido! Protocolo:', protocolo);
+                    console.log('[SignalR Fila] Ticket atual:', ticketId);
+                    console.log('[SignalR Fila] Protocolos correspondem?', protocolo == ticketId);
+                    
+                    if (protocolo == ticketId) {
+                        console.log('[SignalR Fila] ✅ REDIRECIONANDO para chat ao vivo...');
+                        window.location.href = `/Chamado/Detalhes/${ticketId}`;
+                    } else {
+                        console.log('[SignalR Fila] ⚠️ Protocolo diferente, ignorando evento');
+                    }
+                });
+
+                supportConnection.start()
+                    .then(function () {
+                        console.log('[SignalR Fila] ✅ Conexão estabelecida com sucesso!');
+                        console.log('[SignalR Fila] Connection ID:', supportConnection.connectionId);
+                        console.log('[SignalR Fila] Entrando no grupo: ticket-' + ticketId);
+                        return supportConnection.invoke("JoinTicketGroup", ticketId.toString());
+                    })
+                    .then(function() {
+                        console.log('[SignalR Fila] ✅ CONECTADO AO GRUPO ticket-' + ticketId);
+                        console.log('[SignalR Fila] Aguardando técnico assumir...');
+                    })
+                    .catch(err => {
+                        console.error('[SignalR Fila] ❌ ERRO:', err.toString());
+                        console.error('[SignalR Fila] Stack:', err);
+                    });
+            }
+
+            // Finalizar problema resolvido
+            finishResolvedBtn.addEventListener('click', async function() {
+                console.log('[Chatbot] Finalizando problema resolvido...');
+                resolutionArea.style.display = 'none';
+                waitingArea.style.display = 'block';
+
+                try {
+                    const response = await fetch('/Chamado/FinalizarProblemaResolvido', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    console.log('[Chatbot] Resposta do servidor:', data);
+                    
+                    if (data.success) {
+                        console.log('[Chatbot] ✅ Chamado #' + data.ticketId + ' criado como Resolvido');
+                        console.log('[Chatbot] Mostrando pesquisa de satisfação...');
+                        
+                        // Oculta área de espera
+                        waitingArea.style.display = 'none';
+                        
+                        // Oculta chat
+                        chatInputArea.style.display = 'none';
+                        escalationArea.style.display = 'none';
+                        
+                        // Mostra pesquisa de satisfação
+                        showSatisfactionSurvey(data.ticketId);
+                    } else {
+                        console.error('[Chatbot] Erro ao finalizar:', data.message);
+                        addMessage("Erro ao finalizar. Por favor, tente novamente.", 'bot');
+                        waitingArea.style.display = 'none';
+                        resolutionArea.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('[Chatbot] Erro:', error);
+                    addMessage("Erro de comunicação. Por favor, tente novamente.", 'bot');
+                    waitingArea.style.display = 'none';
+                    resolutionArea.style.display = 'block';
+                }
+            });
+
+            // Continuar conversando após detecção de resolução
+            continueChatBtn.addEventListener('click', function() {
+                console.log('[Chatbot] Usuário optou por continuar conversando...');
+                resolutionArea.style.display = 'none';
+                chatInputArea.style.display = 'flex';
+                escalationArea.style.display = 'block';
+                addMessage("Ok! Se precisar de mais ajuda, estou aqui. O que mais posso fazer por você?", 'bot');
+            });
+
+            // NOVO: Botão "Problema Resolvido" (acionamento manual pelo usuário)
+            markAsResolvedBtn.addEventListener('click', function() {
+                console.log('[Chatbot] Usuário marcou problema como resolvido manualmente');
+                // Oculta área de ações e mostra card de confirmação
+                chatInputArea.style.display = 'none';
+                escalationArea.style.display = 'none';
+                resolutionArea.style.display = 'block';
+            });
+
+            // Permitir envio com Enter
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const userText = userInput.value.trim();
+                    if (userText && !isWaitingResponse) {
+                        userInput.value = '';
+                        processMessage(userText);
+                    }
+                }
+            });
+
+            // Função para mostrar pesquisa de satisfação
+            function showSatisfactionSurvey(ticketId) {
+                console.log('[Chatbot] Mostrando pesquisa de satisfação para chamado:', ticketId);
+                
+                const satisfactionArea = document.getElementById('satisfaction-area');
+                const ratingLabel = document.getElementById('rating-label-chatbot');
+                const ratingResult = document.getElementById('rating-result-chatbot');
+                
+                satisfactionArea.style.display = 'block';
+                satisfactionArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Configurar listeners das estrelas
+                const stars = document.querySelectorAll('.star-chatbot');
+                
+                stars.forEach(function(star) {
+                    // Hover: mostra label
+                    star.addEventListener('mouseenter', function() {
+                        const label = this.getAttribute('data-label');
+                        const val = parseInt(this.getAttribute('data-value'));
+                        
+                        ratingLabel.textContent = label;
+                        ratingLabel.style.color = getColorForRating(val);
+                    });
+                    
+                    // Mouse sai: reseta label
+                    star.addEventListener('mouseleave', function() {
+                        ratingLabel.textContent = 'Clique em um botão para avaliar';
+                        ratingLabel.style.color = '#666';
+                    });
+                    
+                    // Click: registra avaliação
+                    star.addEventListener('click', async function() {
+                        const rating = parseInt(this.getAttribute('data-value'));
+                        const label = this.getAttribute('data-label');
+                        
+                        console.log('[Chatbot] ✅ Avaliação selecionada:', rating, 'estrelas -', label);
+                        
+                        // Desabilita todos os botões
+                        stars.forEach(s => s.disabled = true);
+                        
+                        // Mostra feedback visual
+                        ratingLabel.textContent = '⏳ Enviando avaliação...';
+                        ratingLabel.style.color = '#666';
+                        
+                        try {
+                            // Envia avaliação para o servidor
+                            const response = await fetch(`/Chamado/Avaliar/${ticketId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `rating=${rating}`
+                            });
+                            
+                            if (response.ok) {
+                                console.log('[Chatbot] ✅ Avaliação registrada com sucesso!');
+                                
+                                ratingResult.innerHTML = `
+                                    <div class="alert alert-success" style="animation: fadeIn 0.5s;">
+                                        <h5 class="mb-3">✅ Obrigado pela sua avaliação!</h5>
+                                        <p class="mb-2">Você avaliou com <strong>${rating} estrela${rating > 1 ? 's' : ''}</strong> (${label})</p>
+                                        <p class="mb-3">Sua opinião é muito importante para nós!</p>
+                                        <p class="mb-0"><small>Redirecionando para seus chamados...</small></p>
+                                    </div>
+                                `;
+                                
+                                // Esconde as estrelas e label
+                                document.getElementById('rating-stars-chatbot').style.display = 'none';
+                                ratingLabel.style.display = 'none';
+                                
+                                // Redireciona após 3 segundos
+                                setTimeout(() => {
+                                    window.location.href = '/Chamado/Index';
+                                }, 3000);
+                            } else {
+                                throw new Error('Erro ao enviar avaliação');
+                            }
+                        } catch (error) {
+                            console.error('[Chatbot] Erro ao enviar avaliação:', error);
+                            
+                            ratingResult.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <p class="mb-0">❌ Erro ao enviar avaliação. Tente novamente.</p>
+                                </div>
+                            `;
+                            
+                            // Reabilita botões
+                            stars.forEach(s => s.disabled = false);
+                            ratingLabel.textContent = 'Clique em um botão para avaliar';
+                            ratingLabel.style.color = '#666';
+                        }
+                    });
+                });
+            }
+            
+            // Função auxiliar para cores das estrelas
+            function getColorForRating(rating) {
+                switch(rating) {
+                    case 1: return '#dc3545'; // Vermelho
+                    case 2: return '#fd7e14'; // Laranja
+                    case 3: return '#ffc107'; // Amarelo
+                    case 4: return '#20c997'; // Verde claro
+                    case 5: return '#28a745'; // Verde
+                    default: return '#666';
+                }
+            }
+
+            // Inicia a conversa
+            startConversation();
+        });
+    </script>
+}

@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GestaoChamados.Mobile.Views.NovoChamadoPage"
+             Shell.NavBarIsVisible="False" BackgroundColor="White">
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        <Border Grid.Row="0" BackgroundColor="#0066CC" Padding="16,12">
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+                <Label Grid.Row="0" Grid.Column="0" Text=" ChatBot" TextColor="White" FontSize="20" FontAttributes="Bold" VerticalOptions="Center"/>
+                <Button Grid.Row="0" Grid.Column="1" Text=" Voltar" BackgroundColor="#0052A3" TextColor="White" FontSize="13" Padding="12,6" CornerRadius="4" Clicked="OnVoltarClicked" HorizontalOptions="End" VerticalOptions="Center"/>
+                <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="6" Margin="0,8,0,0">
+                    <Label Text="" TextColor="White" FontSize="14"/>
+                    <Label x:Name="UserInfoLabel" Text="usuario@email.com" TextColor="White" FontSize="13" Opacity="0.95"/>
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+        <ScrollView Grid.Row="1" x:Name="ChatScrollView" Padding="16" BackgroundColor="#F8F9FA">
+            <StackLayout x:Name="ChatMessagesLayout" Spacing="8"/>
+        </ScrollView>
+        <Border Grid.Row="2" BackgroundColor="White" Padding="16,12" StrokeThickness="0">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Border Grid.Column="0" BackgroundColor="White" Stroke="#CED4DA" StrokeThickness="1" Padding="14,10" StrokeShape="RoundRectangle 25">
+                    <Entry x:Name="MessageEntry" Placeholder="Digite sua mensagem..." FontSize="14" TextColor="#212529" BackgroundColor="Transparent" VerticalOptions="Center" Completed="OnSendClicked"/>
+                </Border>
+                <Border Grid.Column="1" BackgroundColor="#007BFF" WidthRequest="50" HeightRequest="50" StrokeThickness="0" StrokeShape="RoundRectangle 25">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSendClicked"/>
+                    </Border.GestureRecognizers>
+                    <Image Source="majesticons_send.png" 
+                           WidthRequest="24" 
+                           HeightRequest="24"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Border>
+            </Grid>
+        </Border>
+        <Border Grid.Row="3" BackgroundColor="White" Padding="16,12" StrokeThickness="0" x:Name="ActionButtonsContainer" IsVisible="False">
+            <VerticalStackLayout Spacing="8">
+                <Button x:Name="FalarComHumanoButton" Text="Falar com Atendente Humano" BackgroundColor="#6C757D" TextColor="White" FontSize="14" Padding="16,12" CornerRadius="6" Clicked="OnFalarComHumanoClicked"/>
+                <Button x:Name="ProblemaResolvidoButton" Text=" Problema Resolvido" BackgroundColor="#28A745" TextColor="White" FontSize="14" FontAttributes="Bold" Padding="16,12" CornerRadius="6" Clicked="OnProblemaResolvidoClicked"/>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

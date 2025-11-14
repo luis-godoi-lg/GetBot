@@ -1,0 +1,185 @@
+@using GestaoChamados.Shared.DTOs
+
+@model ManagerDashboardDto
+
+@{
+    ViewData["Title"] = "Dashboard do Gerente";
+}
+
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">📊 Dashboard de Gerenciamento</h1>
+
+    <!-- Cards de Resumo -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Chamados Resolvidos</h5>
+                    <h2>@Model.ChamadosResolvidos</h2>
+                    <small>Média: @Model.AvaliaoMediaAtendimento.ToString("F1") ⭐</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Chamados Abertos</h5>
+                    <h2>@Model.ChamadosAbertos</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Em Atendimento</h5>
+                    <h2>@Model.ChamadosEmAtendimento</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Não Atendidos</h5>
+                    <h2>@Model.ChamadosNaoAtendidos</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Usuários e Avaliação -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Usuários</h5>
+                    <h2 class="text-primary">@Model.TotalUsuarios</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Técnicos</h5>
+                    <h2 class="text-info">@Model.TotalTecnicos</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total de Chamados</h5>
+                    <h2 class="text-secondary">@Model.TotalChamados</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Avaliação Média</h5>
+                    <h2 class="text-warning">@Model.AvaliaoMediaAtendimento.ToString("F1") ⭐</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Chamados por Categoria</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartCategoria"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Desempenho por Técnico</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartDesempenhoTecnico"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="@Url.Action("GerenciarUsuarios", "Manager")" class="btn btn-primary">
+                👥 Gerenciar Usuários e Técnicos
+            </a>
+            <a href="@Url.Action("RelatorioDetalhado", "Manager")" class="btn btn-secondary">
+                📋 Relatório Detalhado
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Gráfico de Categoria
+        const ctxCategoria = document.getElementById('chartCategoria').getContext('2d');
+        new Chart(ctxCategoria, {
+            type: 'doughnut',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.ChamadosPorCategoria.Select(c => $"'{c.Categoria}'")))],
+                datasets: [{
+                    data: [@Html.Raw(string.Join(",", Model.ChamadosPorCategoria.Select(c => c.Quantidade)))],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Desempenho por Técnico
+        const ctxDesempenho = document.getElementById('chartDesempenhoTecnico').getContext('2d');
+        new Chart(ctxDesempenho, {
+            type: 'bar',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.DesempenhoPorTecnico.Select(t => $"'{t.Nome}'")))],
+                datasets: [{
+                    label: 'Chamados Resolvidos',
+                    data: [@Html.Raw(string.Join(",", Model.DesempenhoPorTecnico.Select(t => t.Resolvidos)))],
+                    backgroundColor: '#0d6efd',
+                    borderColor: '#0d6efd',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
